@@ -116,18 +116,22 @@ void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFaci
 	//Find translations
 	if (line)
 	{
+		//Find angle in radians
+		DirectionalAngle dirAngle = GetDirectionalAngleFrom360Angle(initialAngle, false);
+		ConvertToRadians(dirAngle.angle);
+
 		if (followingFacing)
 		{
 			//Magnitude is x, direction is y
-			DirectionalAngle dirAngle = GetDirectionalAngleFrom360Angle(initialAngle, false);
-			ConvertToRadians(dirAngle.angle);
-			lineTranslation = CalculateMagnitudeVector( dirAngle, lineTotal.x);
+			lineTranslation = CalculateVectorOfMagnitude( dirAngle, lineTotal.x);
 			lineTranslation.x *= lineData->translation.y;
-			lineTranslation.y *= lineData->translation.y; //Needs testing
+			lineTranslation.y *= lineData->translation.y;
 		}
 		else
 		{
-			lineTranslation = lineTotal;
+			//Magnitude is square root of vector components
+			float magnitude = CalculateMagnitudeOfVector(lineTotal);
+			lineTranslation = CalculateVectorOfMagnitude(dirAngle, magnitude);
 		}
 	}
  	if (circular)

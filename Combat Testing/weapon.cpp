@@ -14,15 +14,15 @@ void Attack::Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect&
 	}
 	else
 	{
-		origin.x = motionSprite.getPosition().x;
-		origin.y = motionSprite.getPosition().y;
+		origin.x = motionSprite.getPosition().x + game.mapRectScaled.left;
+		origin.y = motionSprite.getPosition().y + game.mapRectScaled.top;
 	}
 	
 	facing = &entityFacing;
 	attackSpeed = &entityAttackSpeed;
 	radius = &holdDistance;
 	originRectOffset = &holdOrigin;
-	initialAngle = GetFullAngleInDegrees(entityFacing);
+ 	initialAngle = GetFullAngleInDegrees(*facing);
 
 	globalRect.left = sprite->getPosition().x + (game.mapRect.left * GC::SPRITE_SCALE);
 	globalRect.top = sprite->getPosition().y + (game.mapRect.top * GC::SPRITE_SCALE);
@@ -188,8 +188,8 @@ void Attack::UpdateAttackMotion(const GameData& game, Motion& motion)
 		//Time
 		if (!motion.loop)
 		{
-			motion.timer -= game.elapsed;
-			//motion.timer -= (1.f / (float)GC::FRAMERATE);
+			//motion.timer -= game.elapsed;
+			motion.timer -= (1.f / (float)GC::FRAMERATE);
 		}
 	}
 }
@@ -215,10 +215,16 @@ void Attack::UpdateRotation(const Motion& motion)
 	{
 		sprite->setRotation(initialAngle + motion.spinTotal);
 	}
-	else if (followingFacing)
+	else //if (followingFacing)
 	{
 		sprite->setRotation(initialAngle);
 	}
+}
+
+//Immediately stops the attack and resets values
+void Attack::Stop()
+{
+	motions[0].active = false;
 }
 
 //Initializes the weapon

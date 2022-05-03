@@ -108,6 +108,7 @@ namespace GC
 	const Motion HEAVY_THRUST_WINDUP = { {}, &GC::WINDUP_LINE_SLOW, {},													false, true, false, false, false };
 	const Motion HEAVY_THRUST_RELEASE = { {}, &GC::WINDUP_THRUST, {},													false, true, false, true, false };
 	const Motion NORMAL_THRUST_RELEASE = { {}, &GC::THRUST_LINE, {},													false, true, false, true, false };
-	const Motion SPINNING_THROW_RELEASE = { {}, &GC::PROJECTILE_LINE_SLOW, &GC::SPIN_SLOW,								false, true, true, true, false };
+	const Motion SPINNING_THROW_SLOW = { {}, &GC::PROJECTILE_LINE_SLOW, &GC::SPIN_SLOW,								false, true, true, true, false };
+	const Motion STRAIGHT_THROW_SLOW = { {}, &GC::PROJECTILE_LINE_SLOW, {},												false, true, false, true, false };
 	const Motion SWORD_OF_DOOM = { &GC::SPIN_HELL, &GC::PROJECTILE_LINE_FAST, &GC::SPIN_HELL,							true, true, true, true, false };
 }

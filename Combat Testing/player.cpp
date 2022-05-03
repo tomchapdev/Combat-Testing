@@ -125,6 +125,11 @@ void Player::KeyboardControls(const sf::Event& event, GameData& game)
 	{
 		entity.weapon.attack0 = GC::SWORD_OF_DOOM_ATTACK;
 	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V))
+	{
+		entity.weapon.attack0 = GC::NORMAL_STRAIGHT_THROW_ATTACK;
+		entity.weapon.attack1 = GC::NORMAL_SPINNING_THROW_ATTACK;
+	}
 	
 	//Speed testing
 	if (event.type == sf::Event::KeyReleased)
@@ -227,25 +232,25 @@ void Player::KeyboardMovement(const sf::Event& event)
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::NORTH;
-			entity.movementVector = CalculateMagnitudeVector(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
 		}
 		else if (movingRight && movingDown) //East directional angle
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::EAST;
-			entity.movementVector = CalculateMagnitudeVector(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
 		}
 		else if (movingLeft && movingDown) //South directional angle
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::SOUTH;
-			entity.movementVector = CalculateMagnitudeVector(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
 		}
 		else if (movingLeft && movingUp) //West directional angle
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::WEST;
-			entity.movementVector = CalculateMagnitudeVector(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
 		}
 		else if (movingUp) //North
 		{

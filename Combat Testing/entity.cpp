@@ -35,7 +35,7 @@ void Entity::UpdateMovementVector(const Dim2Df& target)
 	//Get vector between points, then calculate directional angle using vector
 	facing = CalculateDirectionalAngleFromVector( CalculateVectorBetweenPoints(origin, target) );
 
-	movementVector = CalculateMagnitudeVector(facing, speed);
+	movementVector = CalculateVectorOfMagnitude(facing, speed);
 }
 
 //Move the entity and weapon

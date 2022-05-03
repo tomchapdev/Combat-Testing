@@ -57,6 +57,9 @@ struct Attack
 
 	//Updates the rotation of the sprite
 	void UpdateRotation(const Motion& motion);
+
+	//Immediately stops the attack and resets values
+	void Stop();
 };
 
 //Weapon
@@ -109,6 +112,8 @@ namespace GC
 	const Attack HEAVY_SWING_ATTACK = { {GC::HEAVY_SWING_WINDUP, GC::HEAVY_SWING_RELEASE},		true, true, true, false, false };
 	const Attack HEAVY_THRUST_ATTACK = { {GC::HEAVY_THRUST_WINDUP, GC::HEAVY_THRUST_RELEASE},	true, true, true, false, false };
 	const Attack NORMAL_THRUST_ATTACK = { {GC::NORMAL_THRUST_RELEASE},							true, true, false, false, false };
+	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {GC::STRAIGHT_THROW_SLOW},							false, false, false, false, false };
+	const Attack NORMAL_SPINNING_THROW_ATTACK = { {GC::SPINNING_THROW_SLOW},					false, false, false, false, false };
 	const Attack SWORD_OF_DOOM_ATTACK = { {GC::SWORD_OF_DOOM},									false, true, false, false, false };
 
 	//Weapons

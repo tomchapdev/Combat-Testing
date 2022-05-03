@@ -51,11 +51,11 @@ DirectionalAngle CalculateDirectionalAngleFromVector(const Dim2Df& vector)
 	//Calculate angle based on direction
 	if ((dirAngle.direction == GC::NORTH) || (dirAngle.direction == GC::SOUTH))
 	{
-		dirAngle.angle = atan(absoluteVector.x / absoluteVector.y);
+		dirAngle.angle = atanf(absoluteVector.x / absoluteVector.y);
 	}
 	else //East or West
 	{
-		dirAngle.angle = atan(absoluteVector.y / absoluteVector.x);
+		dirAngle.angle = atanf(absoluteVector.y / absoluteVector.x);
 	}
 
 	return dirAngle;
@@ -64,15 +64,15 @@ DirectionalAngle CalculateDirectionalAngleFromVector(const Dim2Df& vector)
 //Calculates 2D vector using angle and 1D magnitude
 //Requirements: Angle must be in radians
 //Returns: Dim2Df vector (of a magnitude e.g. speed, knockback)
-Dim2Df CalculateMagnitudeVector(const DirectionalAngle& dirAngle, const float& magnitude)
+Dim2Df CalculateVectorOfMagnitude(const DirectionalAngle& dirAngle, const float& magnitude)
 {
 	Dim2Df magVector;
 	
 	if ((dirAngle.direction == GC::NORTH) || (dirAngle.direction == GC::SOUTH))
 	{
 		//Find absolute values
-		magVector.x = magnitude * sin(dirAngle.angle);
-		magVector.y = magnitude * cos(dirAngle.angle);
+		magVector.x = magnitude * sinf(dirAngle.angle);
+		magVector.y = magnitude * cosf(dirAngle.angle);
 
 		//Convert to direction
 		if (dirAngle.direction == GC::NORTH)
@@ -87,8 +87,8 @@ Dim2Df CalculateMagnitudeVector(const DirectionalAngle& dirAngle, const float& m
 	else //East or West
 	{
 		//Find absolute values
-		magVector.y = magnitude * sin(dirAngle.angle);
-		magVector.x = magnitude * cos(dirAngle.angle);
+		magVector.y = magnitude * sinf(dirAngle.angle);
+		magVector.x = magnitude * cosf(dirAngle.angle);
 
 		//Convert to direction
 		if (dirAngle.direction == GC::WEST)
@@ -237,7 +237,7 @@ void ConvertToRadians(float& angle)
 //Returns: Dim2Df translation
 Dim2Df CalculateCircularMotionVector(const float& radius, const float& angle)
 {
-	Dim2Df translation = { radius * cos(angle - GC::RADS_90DEGREES), radius * sin(angle - GC::RADS_90DEGREES) };
+	Dim2Df translation = { radius * cosf(angle - GC::RADS_90DEGREES), radius * sinf(angle - GC::RADS_90DEGREES) };
 
 	return translation;
 }
@@ -245,7 +245,16 @@ Dim2Df CalculateCircularMotionVector(const float& radius, const float& angle)
 //Calculates vector translation of a circular motion from an origin
 Dim2Df CalculateCircularMotionPosition(const Dim2Df& origin, const float& radius, const float& angle)
 {
-	Dim2Df translation = { origin.x + (radius * cos(angle - GC::RADS_90DEGREES)), origin.y + (radius * sin(angle - GC::RADS_90DEGREES)) };
+	Dim2Df translation = { origin.x + (radius * cosf(angle - GC::RADS_90DEGREES)), origin.y + (radius * sinf(angle - GC::RADS_90DEGREES)) };
 
 	return translation;
+}
+
+//Calculates the 1D magnitude of a 2D vector
+//Requirements: components of vector must be floats
+//Returns: float magnitude
+float CalculateMagnitudeOfVector(const Dim2Df& vector)
+{
+	float magnitude = sqrtf((vector.x * vector.x) + (vector.y * vector.y));
+	return magnitude;
 }

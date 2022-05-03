@@ -35,7 +35,7 @@ DirectionalAngle CalculateDirectionalAngleFromVector(const Dim2Df& vector);
 //Calculates 2D vector using angle and 1D magnitude
 //Requirements: Angle must be in radians
 //Returns: Dim2Df vector (of a magnitude e.g. speed, knockback)
-Dim2Df CalculateMagnitudeVector(const DirectionalAngle& dirAngle, const float& magnitude);
+Dim2Df CalculateVectorOfMagnitude(const DirectionalAngle& dirAngle, const float& magnitude);
 
 //Gets a directional angle from a full 360 range angle
 DirectionalAngle GetDirectionalAngleFrom360Angle(const float& angle, const bool& isRadians);
@@ -66,3 +66,8 @@ Dim2Df CalculateCircularMotionVector(const float& radius, const float& angle);
 //Requirements: angle in radians
 //Returns: Dim2Df translation
 Dim2Df CalculateCircularMotionPosition(const Dim2Df& origin, const float& radius, const float& angle);
+
+//Calculates the 1D magnitude of a 2D vector
+//Requirements: components of vector must be floats
+//Returns: float magnitude
+float CalculateMagnitudeOfVector(const Dim2Df& vector);
