@@ -41,15 +41,13 @@ void Entity::UpdateMovementVector(const Dim2Df& target)
 //Move the entity and weapon
 void Entity::Move(GameData& game)
 {
+	//float moveX = movementVector.x * GC::APPROX_ELAPSED, moveY = movementVector.y * GC::APPROX_ELAPSED;
+	float moveX = movementVector.x * game.elapsed, moveY = movementVector.y * game.elapsed;
+
 	if (moving)
 	{
-		//Smooth motion but weapon is jittery
-		globalRect.left += movementVector.x * game.elapsed;
-		globalRect.top += movementVector.y * game.elapsed;
-
-		//This always lands on a pixel, ensuring smooth motions but movement can be strange
-		//globalRect.left = round(globalRect.left + (movementVector.x * game.elapsed));
-		//globalRect.top = round(globalRect.top + (movementVector.y * game.elapsed));
+		globalRect.left += moveX;
+		globalRect.top += moveY;
 	}
 
 	float x = 0.f, y = 0.f;
@@ -57,52 +55,12 @@ void Entity::Move(GameData& game)
 	if (weapon.attacking)
 	{
 		UpdateAttacks(game);
-		
+
 		//Weapon movement correction
 		if (moving)
 		{
-			float weaponMoveApproxCorrection = speed * GC::APPROX_ELAPSED * GC::SIN_COS_45_DEGREES;
-			if ((movementVector.x > 0) && (movementVector.y < 0)) //North East
-			{
-				x -= weaponMoveApproxCorrection;
-				y += weaponMoveApproxCorrection;
-			}
-			else if ((movementVector.x > 0) && (movementVector.y > 0)) //South East
-			{
-				x -= weaponMoveApproxCorrection;
-				y -= weaponMoveApproxCorrection;
-			}
-			else if ((movementVector.x < 0) && (movementVector.y > 0)) //South West
-			{
-				x += weaponMoveApproxCorrection;
-				y -= weaponMoveApproxCorrection;
-			}
-			else if ((movementVector.x < 0) && (movementVector.y < 0)) //North West
-			{
-				x += weaponMoveApproxCorrection;
-				y += weaponMoveApproxCorrection;
-			}
-			else
-			{
-				weaponMoveApproxCorrection /= GC::SIN_COS_45_DEGREES;
-
-				if (movementVector.y < 0) //North
-				{
-					y += weaponMoveApproxCorrection;
-				}
-				else if (movementVector.x > 0) //East
-				{
-					x -= weaponMoveApproxCorrection;
-				}
-				else if (movementVector.y > 0) //South
-				{
-					y -= weaponMoveApproxCorrection;
-				}
-				else //(movementVector.x < 0) //West
-				{
-					x += weaponMoveApproxCorrection;
-				}
-			}
+			x -= moveX;
+			y -= moveY;
 		}
 	}
 	else
@@ -132,7 +90,7 @@ void Entity::Move(GameData& game)
 void Entity::Render(sf::RenderWindow& window, const GameData& game)
 {
 	//Check if in rendered area
-	if (!isPlayer)
+	if (isPlayer)
 	{
 		nearPlayer = UpdateSpritePosition(game, sprite, globalRect, localRect);
 		

@@ -16,7 +16,7 @@ void Player::Init(GameData& game)
 	//Entity stats
 	entity.isPlayer = true;
 	entity.health = 10;
-	entity.speed = 160.f * GC::SPRITE_SCALE;
+	entity.speed = 120.f * GC::SPRITE_SCALE;
 	entity.globalRect = { 684.f * GC::SPRITE_SCALE, 684.f * GC::SPRITE_SCALE, (float)GC::PLAYER_DIMENSIONS.x * GC::SPRITE_SCALE, (float)GC::PLAYER_DIMENSIONS.y * GC::SPRITE_SCALE };
 	entity.anim.data = &GC::PLAYER_ANIM_IDLE;
 
@@ -223,6 +223,7 @@ void Player::KeyboardMovement(const sf::Event& event)
 		}
 	}
 
+	//entity.moving = true;
 	if (entity.moving)
 	{
 		//Find movement vector
@@ -267,6 +268,9 @@ void Player::KeyboardMovement(const sf::Event& event)
 		else //West
 		{
 			entity.movementVector = { -entity.speed, GC::ZERO };
+			//dirAngle.angle = GC::RADS_45DEGREES;
+			//dirAngle.direction = GC::WEST;
+			//entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
 		}
 	}
 }

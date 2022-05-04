@@ -291,37 +291,34 @@ void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, con
 	if (tileID == 9) //Lava fountain
 	{
 		AnimatedTiles animTile;
+		//sf::IntRect rect = { 0, 0, 0, 0 };
 
 		animTile.sprite.setTexture(game.lavaFountainTexture);
 		animTile.sprite.setTextureRect({0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_LAVA_RECT.height});
-		animTile.anim = {&GC::FOUNTAIN_ANIM_LAVA, 0, 0.f};
-		//animTile.globalRect = { (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE,
-		//						GC::FOUNTAIN_ANIM_LAVA_RECT.width, GC::FOUNTAIN_ANIM_LAVA_RECT.height };
-
 		animTile.sprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
-		animTile.globalRect = { (int)(rect.left + x) * GC::SCALED_TILE,
-								(int)((rect.top + y) * GC::SCALED_TILE) - GC::FOUNTAIN_ANIM_TOP_RECT.height,
-								GC::FOUNTAIN_ANIM_LAVA_RECT.width, GC::FOUNTAIN_ANIM_LAVA_RECT.height };
 
+		animTile.anim = {&GC::FOUNTAIN_ANIM_LAVA, 0, 0.f};
+		animTile.globalRect = { (int)(rect.left + x) * GC::SCALED_TILE,
+								(int)(((rect.top + y) * GC::SCALED_TILE) - (GC::FOUNTAIN_ANIM_TOP_RECT.height * GC::SPRITE_SCALE)),
+								(int)(GC::FOUNTAIN_ANIM_LAVA_RECT.width * GC::SPRITE_SCALE), (int)(GC::FOUNTAIN_ANIM_LAVA_RECT.height * GC::SPRITE_SCALE) };
 
 		animatedTiles.push_back(animTile);
-		std::cout << "Lava fountain created!" << std::endl;
 	}
 	else if (tileID == 11) //Water fountain
 	{
 		AnimatedTiles animTile;
+		//sf::IntRect rect = { 0, 0, 0, 0 };
 
 		animTile.sprite.setTexture(game.waterFountainTexture);
 		animTile.sprite.setTextureRect({ 0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_WATER_RECT.height });
-		animTile.anim = { &GC::FOUNTAIN_ANIM_WATER, 0, 0.f };
-
 		animTile.sprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
-		animTile.globalRect = { (int)(rect.left + x) * GC::SCALED_TILE,
-								(int)((rect.top + y) * GC::SCALED_TILE) - GC::FOUNTAIN_ANIM_TOP_RECT.height,
-								GC::FOUNTAIN_ANIM_WATER_RECT.width, GC::FOUNTAIN_ANIM_WATER_RECT.height };
+
+		animTile.anim = { &GC::FOUNTAIN_ANIM_WATER, 0, 0.f };
+		animTile.globalRect = { (int)((rect.left + x) * GC::SCALED_TILE),
+								(int)(((rect.top + y) * GC::SCALED_TILE) - (GC::FOUNTAIN_ANIM_TOP_RECT.height * GC::SPRITE_SCALE)),
+								(int)(GC::FOUNTAIN_ANIM_WATER_RECT.width * GC::SPRITE_SCALE), (int)(GC::FOUNTAIN_ANIM_WATER_RECT.height * GC::SPRITE_SCALE) };
 
 		animatedTiles.push_back(animTile);
-		std::cout << "Water fountain created!" << std::endl;
 	}
 }
 

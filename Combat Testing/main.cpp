@@ -64,10 +64,8 @@ int main()
 	
 		// Update the window
 		//Draw map, then enemies, then player
-		//gamedata.RenderMap(window, (int)(player1.entity.globalRect.left + (player1.entity.bodyCentre.x / GC::SPRITE_SCALE)),
-		//							(int)(player1.entity.globalRect.top + (player1.entity.bodyCentre.y / GC::SPRITE_SCALE)));
-		gamedata.RenderMap(window, (int)((player1.entity.globalRect.left + player1.entity.bodyCentre.x) / GC::SPRITE_SCALE),
-										(int)((player1.entity.globalRect.top + player1.entity.bodyCentre.y) / GC::SPRITE_SCALE));
+		gamedata.RenderMap(window, player1.entity.globalRect.left + player1.entity.bodyCentre.x, player1.entity.globalRect.top + player1.entity.bodyCentre.y, player1.entity.movementVector);
+
 		//Render animated tiles
 		if (startRoom.WithinRenderedArea(gamedata))
 		{
@@ -84,8 +82,6 @@ int main()
 
 		//Render player last
 		player1.entity.Render(window, gamedata);
-
-		//gamedata.RenderCamera(window);
 		window.display();
 	}
 

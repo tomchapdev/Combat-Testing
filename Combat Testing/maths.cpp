@@ -232,7 +232,7 @@ void ConvertToRadians(float& angle)
 	angle *= (GC::RADS_180DEGREES / GC::DEGREES_180);
 }
 
-//Calculates vector translation of a circular motion
+//Calculates vector translation of a circular motion, where 0 is north
 //Requirements: angle in radians
 //Returns: Dim2Df translation
 Dim2Df CalculateCircularMotionVector(const float& radius, const float& angle)

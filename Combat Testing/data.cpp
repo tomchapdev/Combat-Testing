@@ -2,6 +2,7 @@
 
 //Functions
 
+//Initializes game session
 void GameData::Init(sf::RenderWindow& window)
 {
 	//Resolution
@@ -60,10 +61,10 @@ void GameData::Init(sf::RenderWindow& window)
 	}
 
 	//Camera
-	cameraResolution.x = (int)(screenResolution.x / scaling);
-	cameraResolution.y = (int)(screenResolution.y / scaling);
+	cameraRect.width = (int)(screenResolution.x / scaling);
+	cameraRect.height = (int)(screenResolution.y / scaling);
 
-	camera.setSize((float)cameraResolution.x, (float)cameraResolution.y);
+	camera.setSize((float)cameraRect.width, (float)cameraRect.height);
 	camera.setCenter((float)(GC::MAP_DRAW_SIZE.x / 2 * GC::SPRITE_SCALE), (float)(GC::MAP_DRAW_SIZE.y / 2 * GC::SPRITE_SCALE));
 	window.setView(camera);
 
@@ -72,70 +73,86 @@ void GameData::Init(sf::RenderWindow& window)
 	mapSprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
 }
 
-//Updates which part of the map is shown, based on the player's x and y coordinates
-void GameData::UpdateMapVisibility(const int& x, const int& y)
+//Renders the map onto the camera, based on player position
+void GameData::RenderMap(sf::RenderWindow& window, const float& x, const float& y, const Dim2Df& movement)
 {
-	//Map
-	int halfWidth = GC::MAP_DRAW_SIZE.x / 2, halfHeight = GC::MAP_DRAW_SIZE.y / 2;
-	bool moveCamera = false;
+	int halfWidth = GC::MAP_DRAW_SIZE.x / 2, halfHeight = GC::MAP_DRAW_SIZE.y / 2, xPixel = (int)roundf(x / GC::SPRITE_SCALE), yPixel = (int)roundf(y / GC::SPRITE_SCALE);
+	bool moveCameraLeft = false, moveCameraRight = false, moveCameraUp = false, moveCameraDown = false;
 
+	//Map
 	//X axis
-	if (x <= halfWidth)
+	if (xPixel <= halfWidth)
 	{
 		mapRect.left = 0;
-		mapRect.width = x + halfWidth;
-		mapOffset.x = GC::MAP_DRAW_SIZE.x - mapRect.width;
+		moveCameraRight = true;
 	}
-	else if ((x + halfWidth) >= GC::MAP_SIZE_PIXELS)
+	else if ((xPixel + halfWidth) >= GC::MAP_SIZE_PIXELS)
 	{
-		mapRect.left = x - halfWidth;
-		mapRect.width = GC::MAP_SIZE_PIXELS - x - halfWidth;
-		mapOffset.x = 0;
+		mapRect.left = GC::MAP_SIZE_PIXELS - GC::MAP_DRAW_SIZE.x;
+		moveCameraLeft = true;
 	}
 	else
 	{
-		mapRect.left = x - halfWidth;
-		mapRect.width = GC::MAP_DRAW_SIZE.x;
-		mapOffset.x = 0;
+		mapRect.left = xPixel - halfWidth;
 	}
 
 	//Y axis
-	if (y <= halfHeight)
+	if (yPixel <= halfHeight)
 	{
 		mapRect.top = 0;
-		mapRect.height = y + halfHeight;
-		mapOffset.y = GC::MAP_DRAW_SIZE.y - mapRect.height;
+		moveCameraDown = true;
 	}
-	else if ((y + halfHeight) >= GC::MAP_SIZE_PIXELS)
+	else if ((yPixel + halfHeight) >= GC::MAP_SIZE_PIXELS)
 	{
-		mapRect.top = y - halfHeight;
-		mapRect.height = GC::MAP_SIZE_PIXELS - y - halfHeight;
-		mapOffset.y = 0;
+		mapRect.top = GC::MAP_SIZE_PIXELS - GC::MAP_DRAW_SIZE.y;
+		moveCameraUp = true;
 	}
 	else
 	{
-		mapRect.top = y - halfHeight;
-		mapRect.height = GC::MAP_DRAW_SIZE.y;
-		mapOffset.y = 0;
+		mapRect.top = yPixel - halfHeight;
 	}
 
 	//Map sprite
 	mapSprite.setTextureRect(mapRect);
 	mapSprite.setPosition((float)mapOffset.x, (float)mapOffset.y);
+	window.draw(mapSprite);
 
 	mapRectScaled.left = mapRect.left * GC::SPRITE_SCALE;
 	mapRectScaled.top = mapRect.top * GC::SPRITE_SCALE;
 	mapRectScaled.width = mapRect.width * GC::SPRITE_SCALE;
 	mapRectScaled.height = mapRect.height * GC::SPRITE_SCALE;
 
-	//camera.setCenter((float)(GC::MAP_DRAW_SIZE.x / 2), (float)(GC::MAP_DRAW_SIZE.y / 2));
-}
+	//Camera
+	halfWidth = cameraRect.width / 2, halfHeight = cameraRect.height / 2;
+	float centreX = x - mapRectScaled.left - 1.f, centreY = y - mapRectScaled.top - 1.f;
 
-//Renders the map
-void GameData::RenderMap(sf::RenderWindow& window, const int& x, const int& y)
-{
-	UpdateMapVisibility(x, y);
-	window.draw(mapSprite);
+	if (moveCameraLeft || moveCameraRight || moveCameraUp || moveCameraDown)
+	{
+		//Move camera to
+		if (moveCameraLeft)
+		{
+			centreX = (float)(GC::MAP_DRAW_SIZE.x * GC::SPRITE_SCALE) - halfWidth;
+		}
+		else if (moveCameraRight)
+		{
+			centreX = (float)halfWidth;
+		}
+
+		if (moveCameraUp)
+		{
+			centreY = (float)(GC::MAP_DRAW_SIZE.y * GC::SPRITE_SCALE) - halfHeight;
+		}
+		else if (moveCameraDown)
+		{
+			centreY = (float)halfHeight;
+		}
+	}
+	else
+	{
+
+	}
+	
+	camera.setCenter(centreX, centreY);
 }
 
 //Checks if renderable and updates position of the sprite based on global position

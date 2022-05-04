@@ -89,7 +89,6 @@ struct GameData
 {
 	//Window and camera
 	Dim2Di screenResolution = { 0, 0 }; //Resolution of the player's screen
-	Dim2Di cameraResolution = { 0, 0 }; //Resolution of the unscaled camera
 	float scaling = 0.f; //Sprite scaling, varies based on the screen
 	sf::IntRect mapRect = { 0, 0, 0, 0 }; //Position and area of the map texture being drawn to the screen, in pixels
 	sf::FloatRect mapRectScaled = { 0.f, 0.f, 0.f, 0.f }; //Global position and area of the map texture being drawn to the screen, in pixels
@@ -131,25 +130,22 @@ struct GameData
 	//Initializes game session
 	void Init(sf::RenderWindow& window);
 
-	//Updates which part of the map is shown, based on the player's x and y coordinates
-	void UpdateMapVisibility(const int& x, const int& y);
-
-	//Renders the map onto the camera
-	void RenderMap(sf::RenderWindow& window, const int& x, const int& y);
+	//Renders the map onto the camera, based on player position
+	void RenderMap(sf::RenderWindow& window, const float& x, const float& y, const Dim2Df& movement);
 };
 
 //Global constants
 namespace GC
 {
 	//Screen
-	const float SPRITE_SCALE = 2.f; //Sprite scaling
-	const float SCALE_1080 = 2.5f; //View zoom at 1080p
+	const float SPRITE_SCALE = 4.f; //Sprite scaling
+	const float SCALE_1080 = 1.25f; //View zoom at 1080p
 	const float SCALE_1440 = 3.2f; //View zoom at 1440p
 	const float SCALE_2160 = 5.f; //View zoom at 2160p
-	/*Area of the map that is drawn, centred on the player, 38 x 24 tiles.
+	/*Area of the map that is drawn, centred on the player
 	This gives plenty of extra room to allow partially on-screen elements
 	to be easily found and drawn onto the screen with minimal excess.*/
-	const Dim2Di MAP_DRAW_SIZE = { 464, 289 }; //Area of the map around the player that is drawn
+	const Dim2Di MAP_DRAW_SIZE = { 464, 290 }; //Area of the map around the player that is drawn
 	const Dim2Df MAP_DRAW_SIZE_SCALED = { MAP_DRAW_SIZE.x * SPRITE_SCALE, MAP_DRAW_SIZE.y * SPRITE_SCALE }; //Scaled area of the map around the player that is drawn
 	const short int FRAMERATE = 60; //Game refresh rate
 
@@ -199,7 +195,7 @@ namespace GC
 
 	//Weapon
 	const sf::IntRect SWORD_RECT = { 323, 26, 10, 21 }; //Where the sword is on the spritesheet
-	const float WEAPON_HOVER = 0.5f; //Hover distance from centre, in tiles
+	const float WEAPON_HOVER = 0.6f; //Hover distance from centre, in tiles
 	const float WEAPON_HOVER_ROTATION = 30.f; //Hover rotation, in degrees
 
 	//Attack
