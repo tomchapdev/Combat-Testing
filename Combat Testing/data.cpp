@@ -114,7 +114,6 @@ void GameData::RenderMap(sf::RenderWindow& window, const float& x, const float& 
 
 	//Map sprite
 	mapSprite.setTextureRect(mapRect);
-	mapSprite.setPosition((float)mapOffset.x, (float)mapOffset.y);
 	window.draw(mapSprite);
 
 	//Camera

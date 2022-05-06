@@ -91,8 +91,6 @@ struct GameData
 	Dim2Di screenResolution = { 0, 0 }; //Resolution of the player's screen
 	float scaling = 0.f; //Sprite scaling, varies based on the screen
 	sf::IntRect mapRect = { 0, 0, 0, 0 }; //Position and area of the map texture being drawn to the screen, in pixels
-	sf::FloatRect mapRectScaled = { 0.f, 0.f, 0.f, 0.f }; //Global position and area of the map texture being drawn to the screen, in pixels
-	Dim2Di mapOffset = { 0, 0 }; //Offset
 	sf::IntRect cameraRect = { 0, 0, 0, 0 }; //Global position and area of the camera, in pixels
 	sf::View camera{}; //View for the window, zoomed in so that the map and sprites can be drawn in pixels
 

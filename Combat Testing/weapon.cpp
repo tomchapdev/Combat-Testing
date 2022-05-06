@@ -14,8 +14,8 @@ void Attack::Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect&
 	}
 	else
 	{
-		origin.x = motionSprite.getPosition().x + game.mapRectScaled.left;
-		origin.y = motionSprite.getPosition().y + game.mapRectScaled.top;
+		origin.x = motionSprite.getPosition().x + game.mapRect.left;
+		origin.y = motionSprite.getPosition().y + game.mapRect.top;
 	}
 	
 	facing = &entityFacing;
@@ -24,8 +24,8 @@ void Attack::Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect&
 	originRectOffset = &holdOrigin;
  	initialAngle = GetFullAngleInDegrees(*facing);
 
-	globalRect.left = sprite->getPosition().x + game.mapRectScaled.left;
-	globalRect.top = sprite->getPosition().y + game.mapRectScaled.top;
+	globalRect.left = sprite->getPosition().x + game.mapRect.left;
+	globalRect.top = sprite->getPosition().y + game.mapRect.top;
 
 	if (alternatingSwingDirection)
 	{
