@@ -7,30 +7,27 @@
 void Player::Init(GameData& game)
 {
 	//Positioning
-	entity.bodyCentre.x = (float)GC::PLAYER_BODY_CENTRE.x * GC::SPRITE_SCALE;
-	entity.bodyCentre.y = (float)GC::PLAYER_BODY_CENTRE.y * GC::SPRITE_SCALE;
-	entity.localRect = { (float)((game.mapRect.width / 2 * GC::SPRITE_SCALE) - entity.bodyCentre.x),
-							(float)((game.mapRect.height / 2 * GC::SPRITE_SCALE) - entity.bodyCentre.y),
+	entity.bodyCentre.x = (float)GC::PLAYER_BODY_CENTRE.x;
+	entity.bodyCentre.y = (float)GC::PLAYER_BODY_CENTRE.y;
+	entity.localRect = { (float)((game.mapRect.width / 2) - entity.bodyCentre.x),
+							(float)((game.mapRect.height / 2) - entity.bodyCentre.y),
 							(float)GC::PLAYER_DIMENSIONS.x, (float)GC::PLAYER_DIMENSIONS.y };
 
 	//Entity stats
 	entity.isPlayer = true;
 	entity.health = 10;
-	entity.speed = 120.f * GC::SPRITE_SCALE;
-	entity.globalRect = { 684.f * GC::SPRITE_SCALE, 684.f * GC::SPRITE_SCALE, (float)GC::PLAYER_DIMENSIONS.x * GC::SPRITE_SCALE, (float)GC::PLAYER_DIMENSIONS.y * GC::SPRITE_SCALE };
+	entity.speed = 150.f;
+	entity.globalRect = { 684.f, 684.f, (float)GC::PLAYER_DIMENSIONS.x, (float)GC::PLAYER_DIMENSIONS.y };
 	entity.anim.data = &GC::PLAYER_ANIM_IDLE;
 
 	//Weapon stats
 	entity.weapon.active = true;
 	entity.weapon.visible = true;
-	entity.weapon.holdDistance = GC::WEAPON_HOVER * GC::TILE_SIZE * GC::SPRITE_SCALE;
+	entity.weapon.holdDistance = GC::WEAPON_HOVER * GC::TILE_SIZE;
 	entity.weapon.holdOrigin = entity.bodyCentre;
 	entity.weapon.hasTwoAttacks = true;
 	entity.weapon.attack0 = GC::NORMAL_SWING_ATTACK;
 	entity.weapon.attack1 = GC::HEAVY_SWING_ATTACK;
-	//float scale = 2.f;
-	//entity.weapon.sprite.setScale(scale, scale);
-	//entity.attackSpeed = 2;
 
 	//SFML
 	entity.texture = &game.playerTexture;
@@ -38,13 +35,11 @@ void Player::Init(GameData& game)
 	entity.sprite.setTextureRect({0, 0, 16, 22});
 	entity.weapon.sprite.setOrigin({(float)GC::PLAYER_BODY_CENTRE.x, (float)GC::PLAYER_BODY_CENTRE.y });
 	entity.sprite.setPosition(entity.localRect.left, entity.localRect.top);
-	entity.sprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
 
 	entity.weapon.texture = &game.swordTexture;
 	entity.weapon.sprite.setTexture(*entity.weapon.texture);
 	entity.weapon.sprite.setOrigin({ 5.f, 18.f });
 	entity.weapon.sprite.setPosition(entity.localRect.left, entity.localRect.top);
-	entity.weapon.sprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
 }
 
 //Get inputs and react
@@ -253,6 +248,22 @@ void Player::KeyboardMovement(const sf::Event& event)
 			dirAngle.direction = GC::WEST;
 			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
 		}
+		/*if (movingRight && movingUp) //North directional angle
+		{
+			entity.movementVector = { entity.speed * 0.8f, -entity.speed * 0.8f };
+		}
+		else if (movingRight && movingDown) //East directional angle
+		{
+			entity.movementVector = { entity.speed * 0.8f, entity.speed * 0.8f };
+		}
+		else if (movingLeft && movingDown) //South directional angle
+		{
+			entity.movementVector = { -entity.speed * 0.8f, entity.speed * 0.8f };
+		}
+		else if (movingLeft && movingUp) //West directional angle
+		{
+			entity.movementVector = { -entity.speed * 0.8f, -entity.speed * 0.8f };
+		}*/
 		else if (movingUp) //North
 		{
 			entity.movementVector = { GC::ZERO, -entity.speed };

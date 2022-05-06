@@ -2,18 +2,31 @@
 #include "motion.h"
 
 //Projectile data
-struct ProjectileData
+struct Projectile
 {
+	//Setup
+	Motion motion{};
+	short damage = 0;
+	
+	//Setup bools
+	bool followingFacing = false; //If the attack is actively following the entity facing
 
+	//Operational bools
+	bool active = false;
+
+	//Functional variables
+	sf::Sprite sprite{};
 };
 
 //Attack
 struct Attack
 {
-	//Motion
+	//Setup
 	Motion motions[GC::MAX_MOTIONS];
+	Motion projectileMotion{};
 
 	//Setup bools
+	bool summonProjectile = false; //If this attack summons a projectile after the motion has finished
 	bool movingWithEntity = false; //If this motion is moving with the entity
 	bool followingFacing = false; //If the attack is actively following the entity facing
 	bool hasTwoMotions = false; //If this is the first of two motions
@@ -93,8 +106,6 @@ struct Weapon
 	sf::FloatRect globalRect = { 0.f, 0.f, 0.f, 0.f };
 	sf::FloatRect localRect = { 0.f, 0.f, 0.f, 0.f };
 
-	//Functions
-
 	//Initializes the weapon from a template
 	void Init(const char& type);
 
@@ -107,14 +118,20 @@ struct Weapon
 
 namespace GC
 {
-	//Attacks															(bools: movingWithEntity, followingFacing, hasTwoMotions, arcCentredOnInitialAngle, hasRandomSwingDirection)
-	const Attack NORMAL_SWING_ATTACK = { {GC::NORMAL_SWING_RELEASE},							true, false, false, true, true };
-	const Attack HEAVY_SWING_ATTACK = { {GC::HEAVY_SWING_WINDUP, GC::HEAVY_SWING_RELEASE},		true, true, true, false, false };
-	const Attack HEAVY_THRUST_ATTACK = { {GC::HEAVY_THRUST_WINDUP, GC::HEAVY_THRUST_RELEASE},	true, true, true, false, false };
-	const Attack NORMAL_THRUST_ATTACK = { {GC::NORMAL_THRUST_RELEASE},							true, true, false, false, false };
-	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {GC::STRAIGHT_THROW_SLOW},					false, false, false, false, false };
-	const Attack NORMAL_SPINNING_THROW_ATTACK = { {GC::SPINNING_THROW_SLOW},					false, false, false, false, false };
-	const Attack SWORD_OF_DOOM_ATTACK = { {GC::SWORD_OF_DOOM},									false, true, false, false, false };
+	//Attacks															(bools: summonProjectile, movingWithEntity, followingFacing, hasTwoMotions, arcCentredOnInitialAngle, hasRandomSwingDirection)
+	//Swing
+	const Attack NORMAL_SWING_ATTACK = { {GC::NORMAL_SWING_RELEASE}, {},							false, true, false, false, true, true }; //Normal swing attack
+	const Attack HEAVY_SWING_ATTACK = { {GC::HEAVY_SWING_WINDUP, GC::HEAVY_SWING_RELEASE}, {},		false, true, true, true, false, false }; //Heavy swing attack
+	//Thrust
+	const Attack NORMAL_THRUST_ATTACK = { {GC::NORMAL_THRUST_RELEASE}, {},							false, true, true, false, false, false }; //Normal thrust attack
+	const Attack HEAVY_THRUST_ATTACK = { {GC::HEAVY_THRUST_WINDUP, GC::HEAVY_THRUST_RELEASE}, {},	false, true, true, true, false, false }; //Heavy thrust attack
+	//Throw
+	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {GC::STRAIGHT_THROW_SLOW}, {},					false, false, false, false, false, false }; //Normal throw attack
+	const Attack NORMAL_SPINNING_THROW_ATTACK = { {GC::SPINNING_THROW_SLOW}, {},					false, false, false, false, false, false }; //Normal spinning throw attack
+	//Shoot
+	
+	//Special
+	const Attack SWORD_OF_DOOM_ATTACK = { {GC::SWORD_OF_DOOM}, {},									false, false, true, false, false, false }; //Sword of doom attack
 
 	//Weapons
 	//const Weapon;

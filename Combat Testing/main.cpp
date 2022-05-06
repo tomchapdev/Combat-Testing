@@ -23,13 +23,13 @@ int main()
 	//Window
 	sf::RenderWindow window;
 
-	//Clock
-	sf::Clock clock;
-	srand((int)time(0)); //Sets random's seed to current time, for "true random"
-
 	//Game data
 	GameData gamedata;
 	gamedata.Init(window);
+
+	//Clock
+	sf::Clock clock;
+	srand((int)time(0)); //Sets random's seed to current time, for "true random"
 
 	//Cursor
 	sf::Cursor cursor;
@@ -48,6 +48,7 @@ int main()
 	player1.Init(gamedata);
 
 	window.setFramerateLimit(GC::FRAMERATE);
+
 
 	//Start the game loop 
 	while (window.isOpen()) //Could change this to a state manager?

@@ -138,20 +138,17 @@ struct GameData
 namespace GC
 {
 	//Screen
-	const float SPRITE_SCALE = 4.f; //Sprite scaling
-	const float SCALE_1080 = 1.25f; //View zoom at 1080p
+	const float SCALE_1080 = 5.f; //View zoom at 1080p
 	const float SCALE_1440 = 3.2f; //View zoom at 1440p
 	const float SCALE_2160 = 5.f; //View zoom at 2160p
 	/*Area of the map that is drawn, centred on the player
 	This gives plenty of extra room to allow partially on-screen elements
 	to be easily found and drawn onto the screen with minimal excess.*/
 	const Dim2Di MAP_DRAW_SIZE = { 464, 290 }; //Area of the map around the player that is drawn
-	const Dim2Df MAP_DRAW_SIZE_SCALED = { MAP_DRAW_SIZE.x * SPRITE_SCALE, MAP_DRAW_SIZE.y * SPRITE_SCALE }; //Scaled area of the map around the player that is drawn
 	const short int FRAMERATE = 60; //Game refresh rate
 
 	//Tile
 	const short int TILE_SIZE = 16; //Tile size, in pixels
-	const short int SCALED_TILE = (int)(TILE_SIZE * SPRITE_SCALE); //Scaled tile size, in pixels
 	const Dim2Di DOOR_TILESIZE = { 64, 32 }; //Door size, in pixels
 	const short int TILE_NUM = 67; //Total number of tiles
 	const short int DOOR_START_NUM = TILE_NUM - 3; //Where the doors start on the tile list
@@ -195,7 +192,7 @@ namespace GC
 
 	//Weapon
 	const sf::IntRect SWORD_RECT = { 323, 26, 10, 21 }; //Where the sword is on the spritesheet
-	const float WEAPON_HOVER = 0.6f; //Hover distance from centre, in tiles
+	const float WEAPON_HOVER = 0.5f; //Hover distance from centre, in tiles
 	const float WEAPON_HOVER_ROTATION = 30.f; //Hover rotation, in degrees
 
 	//Attack

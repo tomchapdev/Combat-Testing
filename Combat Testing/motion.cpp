@@ -35,8 +35,8 @@ void Motion::Init(const GameData& game, const DirectionalAngle& facing, const fl
 		}
 		if (line)
 		{
-			lineSpeed.x = lineData->translation.x / timer * GC::SPRITE_SCALE;
-			lineSpeed.y = lineData->translation.y / timer * GC::SPRITE_SCALE;
+			lineSpeed.x = lineData->translation.x / timer;
+			lineSpeed.y = lineData->translation.y / timer;
 		}
 		if (spin)
 		{
@@ -55,13 +55,13 @@ void Motion::Init(const GameData& game, const DirectionalAngle& facing, const fl
 		{
 			if (followingFacing)
 			{
-				lineSpeed.x = lineData->translation.x / timer * GC::SPRITE_SCALE;
-				lineSpeed.y = lineData->translation.y / timer * GC::SPRITE_SCALE;
+				lineSpeed.x = lineData->translation.x / timer;
+				lineSpeed.y = lineData->translation.y / timer;
 			}
 			else
 			{
-				lineSpeed.x = -lineData->translation.x / timer * GC::SPRITE_SCALE;
-				lineSpeed.y = -lineData->translation.y / timer * GC::SPRITE_SCALE;
+				lineSpeed.x = -lineData->translation.x / timer;
+				lineSpeed.y = -lineData->translation.y / timer;
 			}
 		}
 		if (spin)
@@ -172,9 +172,6 @@ void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFaci
 	//Translate globalRect
 	globalRect.left += lineTranslation.x + circularTranslation.x;
 	globalRect.top += lineTranslation.y + circularTranslation.y;
-
-	//globalRect.left += roundf(lineTranslation.x + circularTranslation.x);
-	//globalRect.top += roundf(lineTranslation.y + circularTranslation.y);
 }
 
 //Resets the motion back to original values

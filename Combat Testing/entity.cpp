@@ -42,7 +42,9 @@ void Entity::UpdateMovementVector(const Dim2Df& target)
 void Entity::Move(GameData& game)
 {
 	//float moveX = movementVector.x * GC::APPROX_ELAPSED, moveY = movementVector.y * GC::APPROX_ELAPSED;
-	float moveX = movementVector.x * game.elapsed, moveY = movementVector.y * game.elapsed;
+	float moveX = roundf(movementVector.x * game.elapsed), moveY = roundf(movementVector.y * game.elapsed);
+
+	std::cout << "Movement vector: (" << moveX << ", " << moveY << ")" << std::endl;
 
 	if (moving)
 	{
@@ -69,18 +71,18 @@ void Entity::Move(GameData& game)
 		weapon.UpdateHoldRotation(facing);
 	}
 
-	//Weapon bobbing
+	//Weapon bobbing along to sprite's animation
 	if (anim.currentFrame == 5)
 	{
-		y -= GC::SPRITE_SCALE;
+		y -= 1;
 	}
 	else if (anim.currentFrame == 7)
 	{
-		y += GC::SPRITE_SCALE;
+		y += 1;
 	}
 	else if (anim.currentFrame < 4 && anim.currentFrame != 0)
 	{
-		y -= ((anim.currentFrame % 2) - 2) * GC::SPRITE_SCALE;
+		y -= (anim.currentFrame % 2) - 2;
 	}
 	
 	weapon.sprite.move({ x, y });
@@ -109,7 +111,7 @@ void Entity::Render(sf::RenderWindow& window, const GameData& game)
 		{
 			if (!facingRight)
 			{
-				sprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
+				sprite.setScale(1.f, 1.f);
 				bodyCentre.x = globalRect.width - bodyCentre.x;
 				facingRight = true;
 			}
@@ -118,7 +120,7 @@ void Entity::Render(sf::RenderWindow& window, const GameData& game)
 		{
 			if (facingRight)
 			{
-				sprite.setScale(-GC::SPRITE_SCALE, GC::SPRITE_SCALE);
+				sprite.setScale(-1.f, 1.f);
 				bodyCentre.x = globalRect.width - bodyCentre.x;
 				facingRight = false;
 			}

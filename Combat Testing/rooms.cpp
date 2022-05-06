@@ -295,12 +295,11 @@ void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, con
 
 		animTile.sprite.setTexture(game.lavaFountainTexture);
 		animTile.sprite.setTextureRect({0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_LAVA_RECT.height});
-		animTile.sprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
 
 		animTile.anim = {&GC::FOUNTAIN_ANIM_LAVA, 0, 0.f};
-		animTile.globalRect = { (int)(rect.left + x) * GC::SCALED_TILE,
-								(int)(((rect.top + y) * GC::SCALED_TILE) - (GC::FOUNTAIN_ANIM_TOP_RECT.height * GC::SPRITE_SCALE)),
-								(int)(GC::FOUNTAIN_ANIM_LAVA_RECT.width * GC::SPRITE_SCALE), (int)(GC::FOUNTAIN_ANIM_LAVA_RECT.height * GC::SPRITE_SCALE) };
+		animTile.globalRect = { (rect.left + x) * GC::TILE_SIZE,
+								((rect.top + y) * GC::TILE_SIZE) - GC::FOUNTAIN_ANIM_TOP_RECT.height,
+								GC::FOUNTAIN_ANIM_LAVA_RECT.width, GC::FOUNTAIN_ANIM_LAVA_RECT.height };
 
 		animatedTiles.push_back(animTile);
 	}
@@ -311,12 +310,11 @@ void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, con
 
 		animTile.sprite.setTexture(game.waterFountainTexture);
 		animTile.sprite.setTextureRect({ 0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_WATER_RECT.height });
-		animTile.sprite.setScale(GC::SPRITE_SCALE, GC::SPRITE_SCALE);
 
 		animTile.anim = { &GC::FOUNTAIN_ANIM_WATER, 0, 0.f };
-		animTile.globalRect = { (int)((rect.left + x) * GC::SCALED_TILE),
-								(int)(((rect.top + y) * GC::SCALED_TILE) - (GC::FOUNTAIN_ANIM_TOP_RECT.height * GC::SPRITE_SCALE)),
-								(int)(GC::FOUNTAIN_ANIM_WATER_RECT.width * GC::SPRITE_SCALE), (int)(GC::FOUNTAIN_ANIM_WATER_RECT.height * GC::SPRITE_SCALE) };
+		animTile.globalRect = { (rect.left + x) * GC::TILE_SIZE,
+								((rect.top + y) * GC::TILE_SIZE) - GC::FOUNTAIN_ANIM_TOP_RECT.height,
+								GC::FOUNTAIN_ANIM_WATER_RECT.width, GC::FOUNTAIN_ANIM_WATER_RECT.height };
 
 		animatedTiles.push_back(animTile);
 	}
