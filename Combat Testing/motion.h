@@ -76,7 +76,7 @@ struct Motion
 };
 
 namespace GC
-{ 
+{
 	//Circular motion data
 	//Normal attacks
 	const CircularMotionData SWING_ARC = { 140.f, 0.3f }; //Weapon swing arc, movement and rotation of normal swing

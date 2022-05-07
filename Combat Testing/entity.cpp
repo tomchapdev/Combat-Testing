@@ -29,11 +29,11 @@ void Entity::InitKnockback()
 void Entity::UpdateMovementVector(const Dim2Df& target)
 {
 	//Find origin
-	Dim2Df origin = {	globalRect.left + bodyCentre.x,
-						globalRect.top + bodyCentre.y};
+	Dim2Df origin = { globalRect.left + bodyCentre.x,
+						globalRect.top + bodyCentre.y };
 
 	//Get vector between points, then calculate directional angle using vector
-	facing = CalculateDirectionalAngleFromVector( CalculateVectorBetweenPoints(origin, target) );
+	facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(origin, target));
 
 	movementVector = CalculateVectorOfMagnitude(facing, speed);
 }
@@ -84,7 +84,7 @@ void Entity::Move(GameData& game)
 	{
 		y -= (anim.currentFrame % 2) - 2;
 	}
-	
+
 	weapon.sprite.move({ x, y });
 }
 
@@ -95,7 +95,7 @@ void Entity::Render(sf::RenderWindow& window, const GameData& game)
 	if (isPlayer)
 	{
 		nearPlayer = UpdateSpritePosition(game, sprite, globalRect, localRect);
-		
+
 		if (nearPlayer && weapon.visible && !weapon.attacking)
 		{
 			UpdateSpritePosition(game, weapon.sprite, weapon.globalRect, weapon.localRect);

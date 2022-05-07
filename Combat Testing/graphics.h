@@ -39,4 +39,4 @@ struct AnimatedTiles
 How it works:
 - Uses tile's data to draw it onto a texture at a specific location
 - Useful when drawing varying tiles onto a texture */
-void DrawTileOntoTexture(const sf::Image &spritesheet, const Tile &tile, sf::Texture &tileTexture, sf::Texture &texture, const Dim2Di &position);
+void DrawTileOntoTexture(const sf::Image& spritesheet, const Tile& tile, sf::Texture& tileTexture, sf::Texture& texture, const Dim2Di& position);

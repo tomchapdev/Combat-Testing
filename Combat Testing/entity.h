@@ -14,7 +14,7 @@ struct Knockback
 	//Main stats
 	float force = 0.f; //Current force of the knockback
 	float deceleration = 0.f; //Resistance to knockback
-	DirectionalAngle facing{}; //
+	DirectionalAngle facing{};
 
 	//Structs
 	Dim2Df movementVector{ 0.f, 0.f }; //Movement vector of knockback

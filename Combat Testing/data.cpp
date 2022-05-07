@@ -118,31 +118,31 @@ void GameData::RenderMap(sf::RenderWindow& window, const float& x, const float& 
 
 	//Camera
 	halfWidth = cameraRect.width / 2, halfHeight = cameraRect.height / 2;
-	float centreX = x - mapRect.left - 1.f, centreY = y - mapRect.top - 1.f;
+	Dim2Df centre{ x - mapRect.left, y - mapRect.top };
 
 	if (moveCameraLeft || moveCameraRight || moveCameraUp || moveCameraDown)
 	{
 		//Move camera to
 		if (moveCameraLeft)
 		{
-			centreX = (float)(GC::MAP_DRAW_SIZE.x - halfWidth);
+			centre.x = (float)(GC::MAP_DRAW_SIZE.x - halfWidth);
 		}
 		else if (moveCameraRight)
 		{
-			centreX = (float)halfWidth;
+			centre.x = (float)halfWidth;
 		}
 
 		if (moveCameraUp)
 		{
-			centreY = (float)(GC::MAP_DRAW_SIZE.y - halfHeight);
+			centre.y = (float)(GC::MAP_DRAW_SIZE.y - halfHeight);
 		}
 		else if (moveCameraDown)
 		{
-			centreY = (float)halfHeight;
+			centre.y = (float)halfHeight;
 		}
 	}
-	
-	camera.setCenter(centreX, centreY);
+
+	camera.setCenter(centre);
 }
 
 //Checks if renderable and updates position of the sprite based on global position
@@ -152,11 +152,11 @@ bool UpdateSpritePosition(const GameData& game, sf::Sprite& sprite, const sf::Fl
 	bool nearPlayer = false;
 
 	//Check if entity is wholly inside the drawn map area
-	if ((globalRect.left > game.mapRect.left) && ((globalRect.left + globalRect.width) < (game.mapRect.left + game.mapRect.width))
-		&& (globalRect.top > game.mapRect.top) && ((globalRect.top + globalRect.height) < (game.mapRect.top + game.mapRect.height)))
+	const sf::FloatRect tempRect{ game.mapRect };
+	if (globalRect.intersects(tempRect))
 	{
 		nearPlayer = true;
-		
+
 		//Set position on rendered map
 		localRect = globalRect;
 		localRect.left -= game.mapRect.left;
@@ -165,6 +165,6 @@ bool UpdateSpritePosition(const GameData& game, sf::Sprite& sprite, const sf::Fl
 		localRect.top = roundf(localRect.top);
 		sprite.setPosition(localRect.left, localRect.top);
 	}
-	
+
 	return nearPlayer;
 }

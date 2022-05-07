@@ -17,12 +17,12 @@ void Attack::Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect&
 		origin.x = motionSprite.getPosition().x + game.mapRect.left;
 		origin.y = motionSprite.getPosition().y + game.mapRect.top;
 	}
-	
+
 	facing = &entityFacing;
 	attackSpeed = &entityAttackSpeed;
 	radius = &holdDistance;
 	originRectOffset = &holdOrigin;
- 	initialAngle = GetFullAngleInDegrees(*facing);
+	initialAngle = GetFullAngleInDegrees(*facing);
 
 	globalRect.left = sprite->getPosition().x + game.mapRect.left;
 	globalRect.top = sprite->getPosition().y + game.mapRect.top;
@@ -61,32 +61,32 @@ void Attack::UpdateAttack(const GameData& game)
 	{
 		UpdateAttackMotion(game, motions[0]);
 
-		/*if (!motions[0].active && hasTwoMotions)
-		{
-			motions[1].Init(game, *facing, *attackSpeed, swingDirection, followingFacing);
+		//if (!motions[0].active && hasTwoMotions)
+		//{
+		//	motions[1].Init(game, *facing, *attackSpeed, swingDirection, followingFacing);
 
-			if (motions[0].circular)
-			{
-				motions[1].circleTotal += motions[0].circleTotal;
-			}
-			if (motions[0].line)
-			{
-				if (followingFacing)
-				{
-					motions[1].lineTotal.x += motions[0].lineTotal.x * motions[0].lineData->translation.y;
-					//motions[1].lineTotal.y += motions[0].lineTotal.y * motions[0].lineData->translation.y;
-				}
-				else
-				{
-					motions[1].lineTotal.x += motions[0].lineTotal.x;
-					motions[1].lineTotal.y += motions[0].lineTotal.y;
-				}
-			}
-			if (motions[0].spin)
-			{
-				motions[1].spinTotal += motions[0].spinTotal;
-			}
-		}*/
+		//	if (motions[0].circular)
+		//	{
+		//		motions[1].circleTotal += motions[0].circleTotal;
+		//	}
+		//	if (motions[0].line)
+		//	{
+		//		if (followingFacing)
+		//		{
+		//			motions[1].lineTotal.x += motions[0].lineTotal.x * motions[0].lineData->translation.y;
+		//			//motions[1].lineTotal.y += motions[0].lineTotal.y * motions[0].lineData->translation.y;
+		//		}
+		//		else
+		//		{
+		//			motions[1].lineTotal.x += motions[0].lineTotal.x;
+		//			motions[1].lineTotal.y += motions[0].lineTotal.y;
+		//		}
+		//	}
+		//	if (motions[0].spin)
+		//	{
+		//		motions[1].spinTotal += motions[0].spinTotal;
+		//	}
+		//}
 	}
 	else if (!motions[0].active && hasTwoMotions && attackRelease)
 	{
@@ -148,6 +148,11 @@ void Attack::UpdateAttack(const GameData& game)
 	}
 	else if (!hasTwoMotions || motionFinished)
 	{
+		if (summonProjectile)
+		{
+
+		}
+
 		active = false;
 		motions[0].ResetTotals();
 		motions[1].ResetTotals();

@@ -14,8 +14,8 @@ struct Room
 	//Main stats
 	char ID = 0; //Which
 	sf::IntRect rect = { 0, 0, 0, 0 }; //Where the room is on the global map, in tiles
-	sf::IntRect doorsList[GC::ROOM_MAX_DOORS] = { {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0} }; //List of door positions
-	char collisionMap[GC::ROOM_MAX_SIZE][GC::ROOM_MAX_SIZE] = {
+	std::vector<sf::IntRect> doorsList = { {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0} }; //List of door positions
+	std::vector<std::vector<char>> collisionMap = {
 		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
 		{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
@@ -69,7 +69,7 @@ struct Room
 	void FindDoors();
 
 	//Check if this door tile is part of an already found door
-	bool CheckIfFoundDoor(sf::IntRect* doorsList, const int& doorCounter, const int& x, const int& y);
+	bool CheckIfFoundDoor(std::vector<sf::IntRect>& doorsList, const int& doorCounter, const int& x, const int& y);
 
 	//Changes variables to dimensions of the room
 	void GetTypeDimensions(int& width, int& height);

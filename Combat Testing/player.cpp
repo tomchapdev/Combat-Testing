@@ -32,8 +32,8 @@ void Player::Init(GameData& game)
 	//SFML
 	entity.texture = &game.playerTexture;
 	entity.sprite.setTexture(*entity.texture);
-	entity.sprite.setTextureRect({0, 0, 16, 22});
-	entity.weapon.sprite.setOrigin({(float)GC::PLAYER_BODY_CENTRE.x, (float)GC::PLAYER_BODY_CENTRE.y });
+	entity.sprite.setTextureRect({ 0, 0, 16, 22 });
+	entity.weapon.sprite.setOrigin({ (float)GC::PLAYER_BODY_CENTRE.x, (float)GC::PLAYER_BODY_CENTRE.y });
 	entity.sprite.setPosition(entity.localRect.left, entity.localRect.top);
 
 	entity.weapon.texture = &game.swordTexture;
@@ -125,7 +125,7 @@ void Player::KeyboardControls(const sf::Event& event, GameData& game)
 		entity.weapon.attack0 = GC::NORMAL_STRAIGHT_THROW_ATTACK;
 		entity.weapon.attack1 = GC::NORMAL_SPINNING_THROW_ATTACK;
 	}
-	
+
 	//Speed testing
 	if (event.type == sf::Event::KeyReleased)
 	{
@@ -290,11 +290,11 @@ void Player::KeyboardMovement(const sf::Event& event)
 void Player::GetMouseAngle(GameData& game)
 {
 	//Find origin and target points
-	Dim2Df centre = { (float)(game.screenResolution.x / 2), (float)(game.screenResolution.y / 2)};
+	Dim2Df centre = { (float)(game.screenResolution.x / 2), (float)(game.screenResolution.y / 2) };
 	Dim2Df mousePosition = { (float)mouse.getPosition().x, (float)mouse.getPosition().y };
 
 	//Get vector between points, then calculate directional angle using vector
-	entity.facing = CalculateDirectionalAngleFromVector( CalculateVectorBetweenPoints(centre, mousePosition) );
+	entity.facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(centre, mousePosition));
 }
 
 //Controls for gamepad

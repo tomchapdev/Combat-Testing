@@ -65,7 +65,7 @@ void Room::FindDoors()
 }
 
 //Check if this door tile is part of an already found door
-bool Room::CheckIfFoundDoor(sf::IntRect* doorsList, const int& doorCounter, const int& x, const int& y)
+bool Room::CheckIfFoundDoor(std::vector<sf::IntRect>& doorsList, const int& doorCounter, const int& x, const int& y)
 {
 	bool found = false;
 	for (int z = 0; z < doorCounter; ++z)
@@ -168,7 +168,7 @@ void Room::TileDrawing(GameData& game, const int& x, const int& y, const char& t
 			tile.rect.height = GC::TILE_SIZE;
 			tile.rect.width = GC::WALL_SIDE_WIDTH;
 
-			if(right)
+			if (right)
 			{
 				correction = GC::TILE_SIZE - GC::WALL_SIDE_WIDTH;
 
@@ -294,9 +294,9 @@ void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, con
 		//sf::IntRect rect = { 0, 0, 0, 0 };
 
 		animTile.sprite.setTexture(game.lavaFountainTexture);
-		animTile.sprite.setTextureRect({0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_LAVA_RECT.height});
+		animTile.sprite.setTextureRect({ 0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_LAVA_RECT.height });
 
-		animTile.anim = {&GC::FOUNTAIN_ANIM_LAVA, 0, 0.f};
+		animTile.anim = { &GC::FOUNTAIN_ANIM_LAVA, 0, 0.f };
 		animTile.globalRect = { (rect.left + x) * GC::TILE_SIZE,
 								((rect.top + y) * GC::TILE_SIZE) - GC::FOUNTAIN_ANIM_TOP_RECT.height,
 								GC::FOUNTAIN_ANIM_LAVA_RECT.width, GC::FOUNTAIN_ANIM_LAVA_RECT.height };
@@ -346,7 +346,7 @@ bool Room::WithinRenderedArea(const GameData& game)
 	int offset = 3;
 
 	//Check all 4 corners of the room to see if the room is being rendered
-	if (game.mapRect.contains({(rect.left + offset) * GC::TILE_SIZE, (rect.top + offset) * GC::TILE_SIZE }) ||
+	if (game.mapRect.contains({ (rect.left + offset) * GC::TILE_SIZE, (rect.top + offset) * GC::TILE_SIZE }) ||
 		game.mapRect.contains({ (rect.left + rect.width - offset) * GC::TILE_SIZE, (rect.top + offset) * GC::TILE_SIZE }) ||
 		game.mapRect.contains({ (rect.left + offset) * GC::TILE_SIZE, (rect.top + rect.height - offset) * GC::TILE_SIZE }) ||
 		game.mapRect.contains({ (rect.left + rect.width - offset) * GC::TILE_SIZE, (rect.top + rect.height - offset) * GC::TILE_SIZE }))

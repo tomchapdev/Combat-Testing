@@ -23,7 +23,7 @@ void Motion::Init(const GameData& game, const DirectionalAngle& facing, const fl
 	{
 		timer = 4.0f; //For testing purposes
 	}
-	
+
 	//Get change variables based on direction
 	if (facing.direction == GC::NORTH || facing.direction == GC::EAST) //Right
 	{
@@ -123,7 +123,7 @@ void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFaci
 		if (followingFacing)
 		{
 			//Magnitude is x, direction is y
-			lineTranslation = CalculateVectorOfMagnitude( dirAngle, lineTotal.x);
+			lineTranslation = CalculateVectorOfMagnitude(dirAngle, lineTotal.x);
 			lineTranslation.x *= lineData->translation.y;
 			lineTranslation.y *= lineData->translation.y;
 		}
@@ -134,7 +134,7 @@ void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFaci
 			lineTranslation = CalculateVectorOfMagnitude(dirAngle, magnitude);
 		}
 	}
- 	if (circular)
+	if (circular)
 	{
 		//Correct arcs when changing direction
 		if (followingFacing)

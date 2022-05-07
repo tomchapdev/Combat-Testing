@@ -6,8 +6,8 @@ struct Projectile
 {
 	//Setup
 	Motion motion{};
-	short damage = 0;
-	
+	char damage = 0;
+
 	//Setup bools
 	bool followingFacing = false; //If the attack is actively following the entity facing
 
@@ -129,7 +129,7 @@ namespace GC
 	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {GC::STRAIGHT_THROW_SLOW}, {},					false, false, false, false, false, false }; //Normal throw attack
 	const Attack NORMAL_SPINNING_THROW_ATTACK = { {GC::SPINNING_THROW_SLOW}, {},					false, false, false, false, false, false }; //Normal spinning throw attack
 	//Shoot
-	
+
 	//Special
 	const Attack SWORD_OF_DOOM_ATTACK = { {GC::SWORD_OF_DOOM}, {},									false, false, true, false, false, false }; //Sword of doom attack
 

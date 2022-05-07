@@ -6,12 +6,7 @@
 //Returns: Dim2Df vector (between 2 points, global bounds)
 Dim2Df CalculateVectorBetweenPoints(const Dim2Df& origin, const Dim2Df& target)
 {
-	Dim2Df vector;
-
-	vector.x = target.x - origin.x;
-	vector.y = target.y - origin.y;
-
-	return vector;
+	return { target.x - origin.x, target.y - origin.y };
 }
 
 //Calculates angle from 2D dimensions
@@ -51,11 +46,11 @@ DirectionalAngle CalculateDirectionalAngleFromVector(const Dim2Df& vector)
 	//Calculate angle based on direction
 	if ((dirAngle.direction == GC::NORTH) || (dirAngle.direction == GC::SOUTH))
 	{
-		dirAngle.angle = atanf(absoluteVector.x / absoluteVector.y);
+		dirAngle.angle = std::atan(absoluteVector.x / absoluteVector.y);
 	}
 	else //East or West
 	{
-		dirAngle.angle = atanf(absoluteVector.y / absoluteVector.x);
+		dirAngle.angle = std::atan(absoluteVector.y / absoluteVector.x);
 	}
 
 	return dirAngle;
@@ -67,12 +62,12 @@ DirectionalAngle CalculateDirectionalAngleFromVector(const Dim2Df& vector)
 Dim2Df CalculateVectorOfMagnitude(const DirectionalAngle& dirAngle, const float& magnitude)
 {
 	Dim2Df magVector;
-	
+
 	if ((dirAngle.direction == GC::NORTH) || (dirAngle.direction == GC::SOUTH))
 	{
 		//Find absolute values
-		magVector.x = magnitude * sinf(dirAngle.angle);
-		magVector.y = magnitude * cosf(dirAngle.angle);
+		magVector.x = magnitude * std::sin(dirAngle.angle);
+		magVector.y = magnitude * std::cos(dirAngle.angle);
 
 		//Convert to direction
 		if (dirAngle.direction == GC::NORTH)
@@ -87,8 +82,8 @@ Dim2Df CalculateVectorOfMagnitude(const DirectionalAngle& dirAngle, const float&
 	else //East or West
 	{
 		//Find absolute values
-		magVector.y = magnitude * sinf(dirAngle.angle);
-		magVector.x = magnitude * cosf(dirAngle.angle);
+		magVector.y = magnitude * std::sin(dirAngle.angle);
+		magVector.x = magnitude * std::cos(dirAngle.angle);
 
 		//Convert to direction
 		if (dirAngle.direction == GC::WEST)
@@ -135,7 +130,6 @@ DirectionalAngle GetDirectionalAngleFrom360Angle(const float& angle, const bool&
 			dirAngle.direction = GC::EAST;
 			dirAngle.angle -= GC::RADS_90DEGREES;
 		}
-		//Else north so do nothing
 	}
 	else
 	{
@@ -154,7 +148,6 @@ DirectionalAngle GetDirectionalAngleFrom360Angle(const float& angle, const bool&
 			dirAngle.direction = GC::EAST;
 			dirAngle.angle -= GC::DEGREES_90;
 		}
-		//Else north so do nothing
 	}
 
 	return dirAngle;
@@ -178,7 +171,6 @@ float GetFullAngleInRads(const DirectionalAngle& dirAngle)
 	{
 		angle += GC::RADS_90DEGREES;
 	}
-	//Else north so do nothing
 
 	return angle;
 }
@@ -189,7 +181,7 @@ float GetFullAngleInDegrees(const DirectionalAngle& dirAngle)
 {
 	float angle = GetFullAngleInRads(dirAngle);
 	ConvertToDegrees(angle);
-	
+
 	return angle;
 }
 
@@ -237,17 +229,13 @@ void ConvertToRadians(float& angle)
 //Returns: Dim2Df translation
 Dim2Df CalculateCircularMotionVector(const float& radius, const float& angle)
 {
-	Dim2Df translation = { radius * cosf(angle - GC::RADS_90DEGREES), radius * sinf(angle - GC::RADS_90DEGREES) };
-
-	return translation;
+	return { radius * std::cos(angle - GC::RADS_90DEGREES), radius * std::sin(angle - GC::RADS_90DEGREES) };
 }
 
 //Calculates vector translation of a circular motion from an origin
 Dim2Df CalculateCircularMotionPosition(const Dim2Df& origin, const float& radius, const float& angle)
 {
-	Dim2Df translation = { origin.x + (radius * cosf(angle - GC::RADS_90DEGREES)), origin.y + (radius * sinf(angle - GC::RADS_90DEGREES)) };
-
-	return translation;
+	return { origin.x + (radius * std::cos(angle - GC::RADS_90DEGREES)), origin.y + (radius * std::sin(angle - GC::RADS_90DEGREES)) };
 }
 
 //Calculates the 1D magnitude of a 2D vector
@@ -255,6 +243,5 @@ Dim2Df CalculateCircularMotionPosition(const Dim2Df& origin, const float& radius
 //Returns: float magnitude
 float CalculateMagnitudeOfVector(const Dim2Df& vector)
 {
-	float magnitude = sqrtf((vector.x * vector.x) + (vector.y * vector.y));
-	return magnitude;
+	return sqrtf((vector.x * vector.x) + (vector.y * vector.y));
 }

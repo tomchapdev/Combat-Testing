@@ -5,17 +5,36 @@
 
 //To find out how many lines of code, Ctrl + Shift + F, type "\n" in the search box and enable regular expressions
 
+// !!!! USEFUL SHIT !!!! LEARN THESE !!!!
+//Click on symbol name and press F12 to go to definition
+//Ctrl + Left click = the same as F12
+//Crtl + K and Crtl + O to swap between header and source file
+//Crtl-Shift-B to build the project
+//F5 to build and run the project
+//To change multiple symbols at once:
+//SHIFT + ALT + . = Select occurence
+//SHIFT + ALT + , = Deselect 1 occurence
+//Shift + Alt + Up Arrow = Select vertically upwards
+//Shift + Alt + Down Arrow = Select vertically downwards
+//CTRL + R, CTRL + R = Rename variable
+//CTRL + , = Search for thing in project
+//CTRL + K, CTRL + C = Comment
+//CTRL + K, CTRL + U = uncomment
+//CRTL + SHIFT + V - Clipboard history
+// SHIFT + END selects up to the end of the line
+// SHIFT + HOME selects up to the beginning of the line
+// !!!! FUCKIN LEARN THESE !!!!
+
 void GetCursorImage(sf::Cursor& cursor, sf::RenderWindow& window)
 {
-	sf::Image cursorImg;
-	cursorImg.create(16, 16);
-	cursorImg.loadFromFile("cursor.png");
+	sf::Image tempCursor;
+	tempCursor.create(16, 16);
+	tempCursor.loadFromFile("cursor.png");
 
-	if (cursor.loadFromPixels(cursorImg.getPixelsPtr(), { 16, 16 }, { 0, 0 }))
+	if (cursor.loadFromPixels(tempCursor.getPixelsPtr(), { 16, 16 }, { 0, 0 }))
 	{
 		window.setMouseCursor(cursor);
 	}
-
 }
 
 int main()
@@ -47,6 +66,9 @@ int main()
 	Player player1;
 	player1.Init(gamedata);
 
+	//Projectiles
+	std::vector<Projectile> projectiles(GC::MAX_PROJECTILES);
+
 	window.setFramerateLimit(GC::FRAMERATE);
 
 
@@ -62,7 +84,7 @@ int main()
 
 		player1.InputHandling(window, gamedata);
 		player1.entity.Move(gamedata);
-	
+
 		// Update the window
 		//Draw map, then enemies, then player
 		gamedata.RenderMap(window, player1.entity.globalRect.left + player1.entity.bodyCentre.x, player1.entity.globalRect.top + player1.entity.bodyCentre.y, player1.entity.movementVector);
