@@ -1,7 +1,5 @@
 #include "graphics.h"
 
-//Functions
-
 //Updates animation
 void Animation::UpdateAnimation(sf::Sprite& sprite, const float& elapsed)
 {

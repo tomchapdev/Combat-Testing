@@ -43,9 +43,11 @@ struct Entity
 
 	//Positioning
 	Dim2Df bodyCentre = { 0, 0 }; //Player sprite's body centre
-	Dim2Df movementVector = { 0.f, 0.f }; //Current movement values, with scale
+	Dim2Df movementVector = { 0.f, 0.f }; //Current movement values
+	Dim2Di frameMovementVector = { 0, 0 }; //Current movement this frame
 	sf::FloatRect globalRect = { 0.f, 0.f, 0.f, 0.f }; //Current position on the map
 	sf::FloatRect localRect = { 0.f, 0.f, 0.f, 0.f }; //Current position on the rendered map
+	sf::IntRect collisionRect = { 0, 0, 0, 0 }; //Collision rect of the sprite
 
 	//Structs
 	Knockback knock; //Knockback
@@ -65,13 +67,19 @@ struct Entity
 	void UpdateMovementVector(const Dim2Df& target);
 
 	//Moves the entity
-	void Move(GameData& game);
+	void Move(const GameData& game);
+
+	//Checks if movement is valid, using rectangle intersections
+	void CheckMapCollision(const GameData& game);
 
 	//Renders the entity
 	void Render(sf::RenderWindow& window, const GameData& game);
 
 	//Updates any ongoing attacks
-	void UpdateAttacks(const GameData& game);
+	void UpdateAttacks(const GameData& game, std::vector<Projectile>& proj);
+
+	//Update the weapon's state
+	void UpdateWeapon(const GameData& game, std::vector<Projectile>& proj);
 
 	//Entity takes damage
 	void TakeDamage();

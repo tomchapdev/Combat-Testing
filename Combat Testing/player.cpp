@@ -16,8 +16,9 @@ void Player::Init(GameData& game)
 	//Entity stats
 	entity.isPlayer = true;
 	entity.health = 10;
-	entity.speed = 150.f;
+	entity.speed = 130.f;
 	entity.globalRect = { 684.f, 684.f, (float)GC::PLAYER_DIMENSIONS.x, (float)GC::PLAYER_DIMENSIONS.y };
+	entity.collisionRect = GC::PLAYER_BODY_RECT;
 	entity.anim.data = &GC::PLAYER_ANIM_IDLE;
 
 	//Weapon stats
@@ -28,16 +29,18 @@ void Player::Init(GameData& game)
 	entity.weapon.hasTwoAttacks = true;
 	entity.weapon.attack0 = GC::NORMAL_SWING_ATTACK;
 	entity.weapon.attack1 = GC::HEAVY_SWING_ATTACK;
+	//entity.weapon.Init(0); //Needs altering when I add weapon templates
 
 	//SFML
-	entity.texture = &game.playerTexture;
+	entity.texture = &game.textures[GC::PLAYER_TEXTURE];
 	entity.sprite.setTexture(*entity.texture);
 	entity.sprite.setTextureRect({ 0, 0, 16, 22 });
 	entity.weapon.sprite.setOrigin({ (float)GC::PLAYER_BODY_CENTRE.x, (float)GC::PLAYER_BODY_CENTRE.y });
 	entity.sprite.setPosition(entity.localRect.left, entity.localRect.top);
 
-	entity.weapon.texture = &game.swordTexture;
+	entity.weapon.texture = &game.textures[GC::SPRITESHEET_TEXTURE];
 	entity.weapon.sprite.setTexture(*entity.weapon.texture);
+	entity.weapon.sprite.setTextureRect(GC::SWORD_RECT);
 	entity.weapon.sprite.setOrigin({ 5.f, 18.f });
 	entity.weapon.sprite.setPosition(entity.localRect.left, entity.localRect.top);
 }
@@ -248,40 +251,21 @@ void Player::KeyboardMovement(const sf::Event& event)
 			dirAngle.direction = GC::WEST;
 			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
 		}
-		/*if (movingRight && movingUp) //North directional angle
-		{
-			entity.movementVector = { entity.speed * 0.8f, -entity.speed * 0.8f };
-		}
-		else if (movingRight && movingDown) //East directional angle
-		{
-			entity.movementVector = { entity.speed * 0.8f, entity.speed * 0.8f };
-		}
-		else if (movingLeft && movingDown) //South directional angle
-		{
-			entity.movementVector = { -entity.speed * 0.8f, entity.speed * 0.8f };
-		}
-		else if (movingLeft && movingUp) //West directional angle
-		{
-			entity.movementVector = { -entity.speed * 0.8f, -entity.speed * 0.8f };
-		}*/
 		else if (movingUp) //North
 		{
-			entity.movementVector = { GC::ZERO, -entity.speed };
+			entity.movementVector = { 0.f, -entity.speed };
 		}
 		else if (movingRight) //East
 		{
-			entity.movementVector = { entity.speed, GC::ZERO };
+			entity.movementVector = { entity.speed, 0.f };
 		}
 		else if (movingDown) //South
 		{
-			entity.movementVector = { GC::ZERO, entity.speed };
+			entity.movementVector = { 0.f, entity.speed };
 		}
 		else //West
 		{
-			entity.movementVector = { -entity.speed, GC::ZERO };
-			//dirAngle.angle = GC::RADS_45DEGREES;
-			//dirAngle.direction = GC::WEST;
-			//entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
+			entity.movementVector = { -entity.speed, 0.f };
 		}
 	}
 }

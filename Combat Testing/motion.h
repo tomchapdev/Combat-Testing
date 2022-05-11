@@ -96,6 +96,7 @@ namespace GC
 	const LineMotionData WINDUP_ARC_FAST_LINE = { { 4.f, -1.f }, 0.5f }; //Fast arc attack windup's backward movement
 	const LineMotionData WINDUP_SWING_LINE = { { 16.f, 1.f }, 0.2f }; //Weapon swing arc's forward movement
 	//Projectiles
+	const LineMotionData PROJECTILE_THROW = { { 8.f, 1.f }, 0.1f }; //Projectile throw
 	const LineMotionData PROJECTILE_LINE_SLOW = { { 160.f, 1.f }, 1.f }; //Slow projectile
 	const LineMotionData PROJECTILE_LINE_FAST = { { 240.f, 1.f }, 1.f }; //Fast projectile
 
@@ -108,20 +109,21 @@ namespace GC
 	const CircularMotionData SPIN_FAST = { 360.f, 0.2f }; //Fast spin
 	const CircularMotionData SPIN_HELL = { 3600.f, 1.f }; //Hell spin... of doom
 
-	//Motions																								(bools: circular, line, spin, damage, loop)
+	//Motions																							(bools: circular, line, spin, damage, loop)
 	//Normal melee motions
-	const Motion NORMAL_SWING_RELEASE = { &GC::SWING_ARC, {}, &GC::SWING_ARC,											true, false, true, true, false };
-	const Motion NORMAL_THRUST_RELEASE = { {}, &GC::THRUST_LINE, {},													false, true, false, true, false };
+	const Motion NORMAL_SWING_RELEASE = { &SWING_ARC, {}, &SWING_ARC,											true, false, true, true, false };
+	const Motion NORMAL_THRUST_RELEASE = { {}, &THRUST_LINE, {},												false, true, false, true, false };
 	//Heavy melee motions
-	const Motion HEAVY_SWING_WINDUP = { &GC::WINDUP_ARC_SLOW, &WINDUP_ARC_SLOW_LINE, &GC::WINDUP_ARC_SPIN,				true, true, true, false, false };
-	const Motion HEAVY_SWING_RELEASE = { &GC::WINDUP_SWING_ARC, &WINDUP_SWING_LINE, &GC::WINDUP_SWING_SPIN,				true, true, true, true, false };
-	const Motion HEAVY_THRUST_WINDUP = { {}, &GC::WINDUP_LINE_SLOW, {},													false, true, false, false, false };
-	const Motion HEAVY_THRUST_RELEASE = { {}, &GC::WINDUP_THRUST, {},													false, true, false, true, false };
-	//Normal projectile motions
-	const Motion SPINNING_THROW_SLOW = { {}, &GC::PROJECTILE_LINE_SLOW, &GC::SPIN_SLOW,									false, true, true, true, false };
-	const Motion STRAIGHT_THROW_SLOW = { {}, &GC::PROJECTILE_LINE_SLOW, {},												false, true, false, true, false };
+	const Motion HEAVY_SWING_WINDUP = { &WINDUP_ARC_SLOW, &WINDUP_ARC_SLOW_LINE, &WINDUP_ARC_SPIN,				true, true, true, false, false };
+	const Motion HEAVY_SWING_RELEASE = { &WINDUP_SWING_ARC, &WINDUP_SWING_LINE, &WINDUP_SWING_SPIN,				true, true, true, true, false };
+	const Motion HEAVY_THRUST_WINDUP = { {}, &WINDUP_LINE_SLOW, {},												false, true, false, false, false };
+	const Motion HEAVY_THRUST_RELEASE = { {}, &WINDUP_THRUST, {},												false, true, false, true, false };
+	//Normal projectile motion 
+	const Motion THROW_PROJECTILE_FAST = { {}, &PROJECTILE_THROW, {},											false, true, false, false, false };
+	const Motion SPINNING_THROW_SLOW = { {}, &PROJECTILE_LINE_SLOW, &SPIN_SLOW,									false, true, true, true, false };
+	const Motion STRAIGHT_THROW_SLOW = { {}, &PROJECTILE_LINE_SLOW, {},											false, true, false, true, false };
 	//Heavy projectile motions
 
 	//Super attacks
-	const Motion SWORD_OF_DOOM = { &GC::SPIN_HELL, &GC::PROJECTILE_LINE_FAST, &GC::SPIN_HELL,							true, true, true, true, false };
+	const Motion SWORD_OF_DOOM = { &SPIN_HELL, &PROJECTILE_LINE_FAST, &SPIN_HELL,								true, true, true, true, false };
 }

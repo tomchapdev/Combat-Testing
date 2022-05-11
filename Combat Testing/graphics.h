@@ -1,8 +1,6 @@
 #pragma once
 #include "data.h"
 
-//Structs
-
 /*Animation of a sprite
 Requirements: The animated object must have a sprite with a
 texture that's a horizontal list of possible individual textures

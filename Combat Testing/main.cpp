@@ -3,6 +3,10 @@
 #include "rooms.h"
 #include "ui.h"
 
+//This is to force laptops to use the dedicated gpu instead of defaulting to the integrated gpu
+extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
+extern "C" __declspec(dllexport) unsigned long AmdPowerXpressRequestHighPerformance = 1;
+
 //To find out how many lines of code, Ctrl + Shift + F, type "\n" in the search box and enable regular expressions
 
 // !!!! USEFUL SHIT !!!! LEARN THESE !!!!
@@ -68,9 +72,9 @@ int main()
 
 	//Projectiles
 	std::vector<Projectile> projectiles(GC::MAX_PROJECTILES);
+	InitProjectiles(gamedata, projectiles);
 
 	window.setFramerateLimit(GC::FRAMERATE);
-
 
 	//Start the game loop 
 	while (window.isOpen()) //Could change this to a state manager?
@@ -79,11 +83,19 @@ int main()
 		window.clear(sf::Color::Black);
 		//Clock
 		gamedata.elapsed = clock.getElapsedTime().asSeconds();
-		//std::cout << gamedata.elapsed << std::endl;
 		clock.restart();
 
+		if (gamedata.elapsed > GC::APPROX_ELAPSED) //Clamp elapsed time to 1/60th of a second
+		{
+			gamedata.elapsed = GC::APPROX_ELAPSED;
+		}
+
 		player1.InputHandling(window, gamedata);
-		player1.entity.Move(gamedata);
+		if (player1.entity.moving)
+		{
+			player1.entity.Move(gamedata);
+		}
+		player1.entity.UpdateWeapon(gamedata, projectiles);
 
 		// Update the window
 		//Draw map, then enemies, then player
@@ -102,6 +114,8 @@ int main()
 		{
 			itemRoom.UpdateAnimatedTiles(gamedata, window);
 		}
+
+		UpdateProjectiles(gamedata, window, projectiles);
 
 		//Render player last
 		player1.entity.Render(window, gamedata);

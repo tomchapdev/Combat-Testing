@@ -99,10 +99,12 @@ Dim2Df CalculateVectorOfMagnitude(const DirectionalAngle& dirAngle, const float&
 //Adds an angle in degrees to the directional angle in radians, then re-formats it
 void AddDegreesToDirectionalAngleInRads(DirectionalAngle& dirAngle, const float& angle)
 {
-	//Addition and conversions
+	//Convert to degrees and add angle
 	dirAngle.angle = GetFullAngleInDegrees(dirAngle);
 	dirAngle.direction = GC::NORTH;
 	dirAngle.angle += angle;
+
+	//Convert to radians and back to a directional angle
 	ConvertToRadians(dirAngle.angle);
 	ConstrainAngle(dirAngle.angle, true);
 	dirAngle = GetDirectionalAngleFrom360Angle(dirAngle.angle, true);
@@ -194,7 +196,7 @@ void ConstrainAngle(float& angle, const bool& isRadians)
 		{
 			angle -= GC::RADS_360DEGREES;
 		}
-		else if (angle < GC::ZERO)
+		else if (angle < 0.f)
 		{
 			angle += GC::RADS_360DEGREES;
 		}
@@ -205,7 +207,7 @@ void ConstrainAngle(float& angle, const bool& isRadians)
 		{
 			angle -= GC::DEGREES_360;
 		}
-		else if (angle < GC::ZERO)
+		else if (angle < 0.f)
 		{
 			angle += GC::DEGREES_360;
 		}

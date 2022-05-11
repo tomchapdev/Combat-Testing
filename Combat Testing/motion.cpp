@@ -79,21 +79,17 @@ void Motion::UpdateTotals(const GameData& game)
 	{
 		active = false;
 	}
-
-	if (active)
+	else if (active)
 	{
 		//Circular total
 		if (circular)
 		{
 			circleTotal += circleSpeed * game.elapsed;
-			//circleTotal += circleSpeed * (1.f / (float)GC::FRAMERATE);
 		}
 
 		//Line total
 		if (line)
 		{
-			//lineTotal.x += lineSpeed.x * (1.f / (float)GC::FRAMERATE);
-			//lineTotal.y += lineSpeed.y * (1.f / (float)GC::FRAMERATE);
 			lineTotal.x += lineSpeed.x * game.elapsed;
 			lineTotal.y += lineSpeed.y * game.elapsed;
 		}
@@ -102,7 +98,6 @@ void Motion::UpdateTotals(const GameData& game)
 		if (spin)
 		{
 			spinTotal += spinSpeed * game.elapsed;
-			//spinTotal += spinSpeed * (1.f / (float)GC::FRAMERATE);
 		}
 	}
 }

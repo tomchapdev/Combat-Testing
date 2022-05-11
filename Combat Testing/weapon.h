@@ -1,7 +1,19 @@
 #pragma once
 #include "motion.h"
 
-//Projectile data
+//Data used for projectiles
+//Setup:
+//const Motion* motion, const sf::IntRect* textureRect, char damage, char num, char spread
+struct ProjectileData
+{
+	const Motion* motion{}; //Motion of this projectile
+	const sf::IntRect* textureRect{}; //Pointer to the texture used for this projectile
+	char baseDamage = 0; //Base damage of the projectile
+	char num = 0; //Number of projectiles in this attack
+	float spread = 0.f; //How far apart the extra projectiles are spread, from the initial angle, in degrees
+};
+
+//Projectile
 struct Projectile
 {
 	//Setup
@@ -9,21 +21,33 @@ struct Projectile
 	char damage = 0;
 
 	//Setup bools
-	bool followingFacing = false; //If the attack is actively following the entity facing
+	bool followingFacing = true; //If the projectile is actively following the entity facing
 
 	//Operational bools
 	bool active = false;
 
+	//Positioning
+	Dim2Df origin = { 0.f, 0.f };
+	sf::FloatRect globalRect = { 0.f, 0.f, 0.f, 0.f };
+	sf::FloatRect localRect = { 0.f, 0.f, 0.f, 0.f };
+	float angle = 0.f;
+
 	//Functional variables
 	sf::Sprite sprite{};
+
+	//Updates the projectile
+	void Update(const GameData& game);
+
+	//Renders the projectile
+	void Render(sf::RenderWindow& window);
 };
 
 //Attack
 struct Attack
 {
 	//Setup
-	Motion motions[GC::MAX_MOTIONS];
-	Motion projectileMotion{};
+	Motion motions[GC::MAX_MOTIONS]; //Attack motions
+	const ProjectileData* projectileData{}; //Data of this attack's projectile
 
 	//Setup bools
 	bool summonProjectile = false; //If this attack summons a projectile after the motion has finished
@@ -39,8 +63,8 @@ struct Attack
 	bool motionFinished = false;
 
 	//Positioning
-	sf::FloatRect globalRect{};
-	sf::FloatRect localRect{};
+	sf::FloatRect globalRect{ 0.f, 0.f, 0.f, 0.f };
+	sf::FloatRect localRect{ 0.f, 0.f, 0.f, 0.f };
 	Dim2Df origin{};
 	float initialAngle = 0.f;
 	char swingDirection = 1;
@@ -57,7 +81,7 @@ struct Attack
 	void Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect& entityRect, DirectionalAngle& entityFacing, float& entityAttackSpeed, float& holdDistance, Dim2Df& holdVector);
 
 	//Updates attack
-	void UpdateAttack(const GameData& game);
+	void UpdateAttack(const GameData& game, std::vector<Projectile>& projList);
 
 	//Update loop for attack
 	void UpdateAttackMotion(const GameData& game, Motion& motion);
@@ -65,11 +89,8 @@ struct Attack
 	//Moves the global rect to it's original position around the entity
 	void RepositionGlobalRectToEntity();
 
-	//Moves the global rect to it's original position
-	void RepositionGlobalRectToOrigin();
-
-	//Updates the rotation of the sprite
-	void UpdateRotation(const Motion& motion);
+	//Adds projectiles to the list
+	void SpawnProjectiles(const GameData& game, std::vector<Projectile>& projList);
 
 	//Immediately stops the attack and resets values
 	void Stop();
@@ -103,35 +124,49 @@ struct Weapon
 	float holdDistance = 0.f; //How far away the weapon is held
 	Dim2Df holdOrigin = { 0.f, 0.f }; //The point that the weapon will rotate around, from top left of entity's sprite
 	Dim2Df holdVector = { 0.f, 0.f }; //Vector from origin, where the weapon will be held
-	sf::FloatRect globalRect = { 0.f, 0.f, 0.f, 0.f };
-	sf::FloatRect localRect = { 0.f, 0.f, 0.f, 0.f };
 
 	//Initializes the weapon from a template
 	void Init(const char& type);
 
 	//Updates the position of the weapon
-	void UpdateHoldPosition(const DirectionalAngle& facing, const sf::FloatRect& entityRect);
+	void UpdateHoldPosition(const GameData& game, const DirectionalAngle& facing, const sf::FloatRect& entityRect);
 
 	//Updates the rotation of the weapon
 	void UpdateHoldRotation(const DirectionalAngle& facing);
 };
 
+//Moves the global rect to it's original position
+void RepositionGlobalRectToOrigin(sf::FloatRect& globalRect, const Dim2Df& origin);
+
+//Updates the rotation of the sprite
+void UpdateRotation(const Motion& motion, sf::Sprite& sprite, const float& initialAngle);
+
+//Initializes all projectiles
+void InitProjectiles(const GameData& game, std::vector<Projectile>& projList);
+
+//Updates all active projectiles
+void UpdateProjectiles(const GameData& game, sf::RenderWindow& window, std::vector<Projectile>& projList);
+
 namespace GC
 {
-	//Attacks															(bools: summonProjectile, movingWithEntity, followingFacing, hasTwoMotions, arcCentredOnInitialAngle, hasRandomSwingDirection)
+	//Projectile data
+	const ProjectileData PROJECTILE_DATA_STRAIGHT_THROW = { &STRAIGHT_THROW_SLOW, &SWORD_RECT, 1, 1, 18.f };
+	const ProjectileData PROJECTILE_DATA_SPINNING_THROW = { &SPINNING_THROW_SLOW, &SWORD_RECT, 1, 21, 18.f };
+
+	//Attacks																	(bools: summonProjectile, movingWithEntity, followingFacing, hasTwoMotions, arcCentredOnInitialAngle, hasRandomSwingDirection)
 	//Swing
-	const Attack NORMAL_SWING_ATTACK = { {GC::NORMAL_SWING_RELEASE}, {},							false, true, false, false, true, true }; //Normal swing attack
-	const Attack HEAVY_SWING_ATTACK = { {GC::HEAVY_SWING_WINDUP, GC::HEAVY_SWING_RELEASE}, {},		false, true, true, true, false, false }; //Heavy swing attack
+	const Attack NORMAL_SWING_ATTACK = { {NORMAL_SWING_RELEASE}, {},											false, true, false, false, true, true }; //Normal swing attack
+	const Attack HEAVY_SWING_ATTACK = { {HEAVY_SWING_WINDUP, GC::HEAVY_SWING_RELEASE}, {},						false, true, true, true, false, false }; //Heavy swing attack
 	//Thrust
-	const Attack NORMAL_THRUST_ATTACK = { {GC::NORMAL_THRUST_RELEASE}, {},							false, true, true, false, false, false }; //Normal thrust attack
-	const Attack HEAVY_THRUST_ATTACK = { {GC::HEAVY_THRUST_WINDUP, GC::HEAVY_THRUST_RELEASE}, {},	false, true, true, true, false, false }; //Heavy thrust attack
+	const Attack NORMAL_THRUST_ATTACK = { {NORMAL_THRUST_RELEASE}, {},											false, true, true, false, false, false }; //Normal thrust attack
+	const Attack HEAVY_THRUST_ATTACK = { {HEAVY_THRUST_WINDUP, HEAVY_THRUST_RELEASE}, {},						false, true, true, true, false, false }; //Heavy thrust attack
 	//Throw
-	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {GC::STRAIGHT_THROW_SLOW}, {},					false, false, false, false, false, false }; //Normal throw attack
-	const Attack NORMAL_SPINNING_THROW_ATTACK = { {GC::SPINNING_THROW_SLOW}, {},					false, false, false, false, false, false }; //Normal spinning throw attack
+	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {THROW_PROJECTILE_FAST}, &PROJECTILE_DATA_STRAIGHT_THROW,		true, true, true, false, false, false }; //Normal throw attack
+	const Attack NORMAL_SPINNING_THROW_ATTACK = { {THROW_PROJECTILE_FAST}, &PROJECTILE_DATA_SPINNING_THROW,		true, true, true, false, false, false }; //Normal spinning throw attack
 	//Shoot
 
 	//Special
-	const Attack SWORD_OF_DOOM_ATTACK = { {GC::SWORD_OF_DOOM}, {},									false, false, true, false, false, false }; //Sword of doom attack
+	const Attack SWORD_OF_DOOM_ATTACK = { {SWORD_OF_DOOM}, {},													false, false, true, false, false, false }; //Sword of doom attack
 
 	//Weapons
 	//const Weapon;

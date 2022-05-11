@@ -8,18 +8,21 @@ void Room::Init(GameData& game, const int& roomNumber, const Dim2Di& position)
 	//Position
 	rect.left = position.x;
 	rect.top = position.y;
+
+	//Dimensions
 	GetTypeDimensions(rect.width, rect.height);
 
 	//Draw tiles
-	char tileID = 0;
-	for (int y = 0; y < rect.height; ++y)
+	unsigned char tileID;
+	for (char y = 0; y < rect.height; ++y)
 	{
-		for (int x = 0; x < rect.width; ++x)
+		for (char x = 0; x < rect.width; ++x)
 		{
 			tileID = data->tilemap[y][x];
 			if (tileID < GC::DOOR_START_NUM)
 			{
 				TileDrawing(game, x, y, tileID);
+				AlterCollisionMap(game, x, y, tileID);
 				CheckForAnimatedTiles(game, x, y, tileID);
 			}
 		}
@@ -27,13 +30,13 @@ void Room::Init(GameData& game, const int& roomNumber, const Dim2Di& position)
 
 	//Draw doors
 	FindDoors();
-	int doorID;
+	unsigned char doorID;
 
-	for (int z = 0; z < doorCounter; ++z)
+	for (char z = 0; z < doorCounter; ++z)
 	{
 		doorID = data->tilemap[doorsList[z].top][doorsList[z].left];
-		game.doorTexture.loadFromImage(game.spritesheetImg, GC::TILELIST[doorID].rect);
-		game.mapTexture.update(game.doorTexture, (rect.left + doorsList[z].left) * GC::TILE_SIZE, (rect.top + doorsList[z].top) * GC::TILE_SIZE);
+		game.textures[GC::DOOR_TEXTURE].loadFromImage(game.spritesheetImg, GC::TILE_LIST[doorID].rect);
+		game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::DOOR_TEXTURE], (rect.left + doorsList[z].left) * GC::TILE_SIZE, (rect.top + doorsList[z].top) * GC::TILE_SIZE);
 	}
 }
 
@@ -42,21 +45,21 @@ void Room::FindDoors()
 {
 	bool firstDoor = true;
 
-	for (int y = 0; y < rect.height; ++y)
+	for (char y = 0; y < rect.height; ++y)
 	{
-		for (int x = 0; x < rect.width; ++x)
+		for (char x = 0; x < rect.width; ++x)
 		{
 			if (data->tilemap[y][x] >= GC::DOOR_START_NUM)
 			{
 				if (firstDoor)
 				{
-					doorsList[doorCounter] = { x, y, 4, 2 };
+					doorsList[doorCounter] = { x, y, GC::DOOR_TILE_WIDTH, GC::DOOR_TILE_HEIGHT };
 					doorCounter += 1;
 					firstDoor = false;
 				}
 				else if (!CheckIfFoundDoor(doorsList, doorCounter, x, y))
 				{
-					doorsList[doorCounter] = { x, y, 4, 2 };
+					doorsList[doorCounter] = { x, y, GC::DOOR_TILE_WIDTH, GC::DOOR_TILE_HEIGHT };
 					doorCounter += 1;
 				}
 			}
@@ -86,23 +89,23 @@ void Room::GetTypeDimensions(int& width, int& height)
 {
 	if (data->type == GC::R32X32)
 	{
-		width = 32;
-		height = 32;
+		width = GC::ROOM_TYPE_0.x;
+		height = GC::ROOM_TYPE_0.y;
 	}
 	else if (data->type == GC::R16X16)
 	{
-		width = 16;
-		height = 16;
+		width = GC::ROOM_TYPE_1.x;
+		height = GC::ROOM_TYPE_1.y;
 	}
 	else if (data->type == GC::R32X16)
 	{
-		width = 32;
-		height = 16;
+		width = GC::ROOM_TYPE_2.x;
+		height = GC::ROOM_TYPE_2.y;
 	}
 	else if (data->type == GC::R16X32)
 	{
-		width = 16;
-		height = 32;
+		width = GC::ROOM_TYPE_3.x;
+		height = GC::ROOM_TYPE_3.y;
 	}
 }
 
@@ -111,8 +114,8 @@ void Room::TileDrawing(GameData& game, const int& x, const int& y, const char& t
 {
 	//Complicated alterations based on tile ID
 	bool requiresFloor = false, wallside = false, walltop = false, corner = false, right = false;
-	int correction = 0;
-	Tile tile = GC::TILELIST[tileID];
+	char correction = 0;
+	Tile tile = GC::TILE_LIST[tileID];
 
 	TileDrawingBools(tile, requiresFloor, wallside, walltop, corner, right);
 
@@ -130,15 +133,15 @@ void Room::TileDrawing(GameData& game, const int& x, const int& y, const char& t
 				correction = GC::TILE_SIZE - GC::WALL_SIDE_WIDTH;
 
 				tile.rect.left += correction;
-				game.wallsideTexture.loadFromImage(game.spritesheetImg, tile.rect);
+				game.textures[GC::WALL_SIDE_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
 
 				tile.rect.left -= correction;
-				game.mapTexture.update(game.wallsideTexture, ((rect.left + x) * GC::TILE_SIZE) + correction, (rect.top + y) * GC::TILE_SIZE);
+				game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::WALL_SIDE_TEXTURE], ((rect.left + x) * GC::TILE_SIZE) + correction, (rect.top + y) * GC::TILE_SIZE);
 			}
 			else
 			{
-				game.wallsideTexture.loadFromImage(game.spritesheetImg, tile.rect);
-				game.mapTexture.update(game.wallsideTexture, (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
+				game.textures[GC::WALL_SIDE_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
+				game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::WALL_SIDE_TEXTURE], (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
 			}
 		}
 		else if (walltop)
@@ -147,10 +150,10 @@ void Room::TileDrawing(GameData& game, const int& x, const int& y, const char& t
 			correction = GC::TILE_SIZE - GC::WALL_TOP_HEIGHT;
 
 			tile.rect.top += correction;
-			game.walltopTexture.loadFromImage(game.spritesheetImg, tile.rect);
+			game.textures[GC::WALL_TOP_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
 
 			tile.rect.top -= correction;
-			game.mapTexture.update(game.walltopTexture, (rect.left + x) * GC::TILE_SIZE, ((rect.top + y) * GC::TILE_SIZE) + correction);
+			game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::WALL_TOP_TEXTURE], (rect.left + x) * GC::TILE_SIZE, ((rect.top + y) * GC::TILE_SIZE) + correction);
 		}
 		else if (corner)
 		{
@@ -159,10 +162,10 @@ void Room::TileDrawing(GameData& game, const int& x, const int& y, const char& t
 			correction = GC::TILE_SIZE - GC::WALL_TOP_HEIGHT;
 
 			tile.rect.top += correction;
-			game.walltopTexture.loadFromImage(game.spritesheetImg, tile.rect);
+			game.textures[GC::WALL_TOP_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
 
 			tile.rect.top -= correction;
-			game.mapTexture.update(game.walltopTexture, (rect.left + x) * GC::TILE_SIZE, ((rect.top + y) * GC::TILE_SIZE) + correction);
+			game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::WALL_TOP_TEXTURE], (rect.left + x) * GC::TILE_SIZE, ((rect.top + y) * GC::TILE_SIZE) + correction);
 
 			//Wall side
 			tile.rect.height = GC::TILE_SIZE;
@@ -173,27 +176,27 @@ void Room::TileDrawing(GameData& game, const int& x, const int& y, const char& t
 				correction = GC::TILE_SIZE - GC::WALL_SIDE_WIDTH;
 
 				tile.rect.left += correction;
-				game.wallsideTexture.loadFromImage(game.spritesheetImg, tile.rect);
+				game.textures[GC::WALL_SIDE_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
 
 				tile.rect.left -= correction;
-				game.mapTexture.update(game.wallsideTexture, ((rect.left + x) * GC::TILE_SIZE) + correction, (rect.top + y) * GC::TILE_SIZE);
+				game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::WALL_SIDE_TEXTURE], ((rect.left + x) * GC::TILE_SIZE) + correction, (rect.top + y) * GC::TILE_SIZE);
 			}
 			else
 			{
-				game.wallsideTexture.loadFromImage(game.spritesheetImg, tile.rect);
-				game.mapTexture.update(game.wallsideTexture, (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
+				game.textures[GC::WALL_SIDE_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
+				game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::WALL_SIDE_TEXTURE], (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
 			}
 		}
 		else
 		{
-			game.tileTexture.loadFromImage(game.spritesheetImg, tile.rect);
-			game.mapTexture.update(game.tileTexture, (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
+			game.textures[GC::TILE_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
+			game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::TILE_TEXTURE], (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
 		}
 	}
 	else //No extra drawing required for this tile
 	{
-		game.tileTexture.loadFromImage(game.spritesheetImg, tile.rect);
-		game.mapTexture.update(game.tileTexture, (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
+		game.textures[GC::TILE_TEXTURE].loadFromImage(game.spritesheetImg, tile.rect);
+		game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::TILE_TEXTURE], (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
 	}
 }
 
@@ -209,11 +212,11 @@ void Room::TileDrawingBools(const Tile& tile, bool& requiresFloor, bool& wallsid
 	{
 		requiresFloor = true;
 
-		if (tile.ID < GC::WALL_SIDE_RANGE.x + 2)
+		if ((tile.ID == GC::T_WALL_SIDE_TOP_LEFT) || (tile.ID == GC::T_WALL_SIDE_TOP_RIGHT))
 		{
 			walltop = true;
 		}
-		else if (tile.ID == GC::WALL_SIDE_RANGE.x + 2)
+		else if ((tile.ID == GC::T_WALL_SIDE_MID_RIGHT) || (tile.ID == GC::T_WALL_SIDE_FRONT_RIGHT))
 		{
 			wallside = true;
 			right = true;
@@ -226,42 +229,12 @@ void Room::TileDrawingBools(const Tile& tile, bool& requiresFloor, bool& wallsid
 	else if ((tile.ID >= GC::WALL_CORNER_RANGE.x) && (tile.ID <= GC::WALL_CORNER_RANGE.y))
 	{
 		requiresFloor = true;
+		corner = true;
 
-		if (tile.ID < GC::WALL_CORNER_RANGE.x + 2)
+		if ((tile.ID == GC::T_WALL_CORNER_BOTTOM_RIGHT) || (tile.ID == GC::T_WALL_IN_CORNER_L_TOP_RIGHT))
 		{
-			walltop = true;
-		}
-		else if (tile.ID == GC::WALL_CORNER_RANGE.x + 3)
-		{
-			corner = true;
 			right = true;
 		}
-		else
-		{
-			corner = true;
-		}
-	}
-	else if ((tile.ID >= GC::WALL_INCORNER_RANGE.x) && (tile.ID <= GC::WALL_INCORNER_RANGE.y))
-	{
-		requiresFloor = true;
-
-		if (tile.ID > GC::WALL_CORNER_RANGE.x + 1)
-		{
-			walltop = true;
-		}
-		else if (tile.ID == GC::WALL_CORNER_RANGE.x + 1)
-		{
-			corner = true;
-			right = true;
-		}
-		else
-		{
-			corner = true;
-		}
-	}
-	else if (tile.ID == 21) //Wall column top
-	{
-		requiresFloor = true;
 	}
 }
 
@@ -281,19 +254,76 @@ void Room::DrawRandomFloor(GameData& game, const int& x, const int& y)
 	}
 
 	//Draw random floor
-	game.tileTexture.loadFromImage(game.spritesheetImg, GC::TILELIST[floorID].rect);
-	game.mapTexture.update(game.tileTexture, (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
+	game.textures[GC::TILE_TEXTURE].loadFromImage(game.spritesheetImg, GC::TILE_LIST[floorID].rect);
+	game.textures[GC::MAP_FLOOR_TEXTURE].update(game.textures[GC::TILE_TEXTURE], (rect.left + x) * GC::TILE_SIZE, (rect.top + y) * GC::TILE_SIZE);
+}
+
+//Alters the collision map based on the tile
+void Room::AlterCollisionMap(GameData& game, const int& x, const int& y, const char& tileID) //NEEDS EDITING
+{
+	unsigned char tileX = x + rect.left, tileY = y + rect.top;
+
+	if (tileID > GC::WALL_RANGE.y)
+	{
+		if ((tileID == GC::T_WATER_FOUNTAIN_BASIN) || (tileID == GC::T_LAVA_FOUNTAIN_BASIN)) //Fountain basins
+		{
+			game.collisionMap[tileY][tileX] = GC::C_FOUNTAIN_BASIN;
+		}
+		else if ((tileID == GC::T_WALL_COLUMN_BASE) || (tileID == GC::T_COLUMN_BASE)) //Column bases
+		{
+			game.collisionMap[tileY][tileX] = GC::C_COLUMN_BASE;
+		}
+		else if (tileID < GC::WALL_SIDE_RANGE.x) //Floors
+		{
+			game.collisionMap[tileY][tileX] = GC::C_FREE_MOVEMENT;
+		}
+		else if (tileID == GC::T_WALL_SIDE_TOP_LEFT) //Small wall top left
+		{
+			game.collisionMap[tileY][tileX] = GC::C_WALL_TOP_BOTTOM_LEFT;
+		}
+		else if (tileID == GC::T_WALL_SIDE_TOP_RIGHT) //Small wall top right
+		{
+			game.collisionMap[tileY][tileX] = GC::C_WALL_TOP_BOTTOM_RIGHT;
+		}
+		else if (tileID <= GC::WALL_SIDE_RANGE.y - 2) //Wall sides right
+		{
+			game.collisionMap[tileY][tileX] = GC::C_WALL_SIDE_RIGHT;
+		}
+		else if (tileID <= GC::WALL_SIDE_RANGE.y) //Wall sides left
+		{
+			game.collisionMap[tileY][tileX] = GC::C_WALL_SIDE_LEFT;
+		}
+		else if (tileID <= GC::WALL_TOP_RANGE.y) //Wall tops
+		{
+			game.collisionMap[tileY][tileX] = GC::C_WALL_TOP;
+		}
+		else if (tileID <= GC::WALL_CORNER_RANGE.y - 2) //Wall corners bottom left
+		{
+			game.collisionMap[tileY][tileX] = GC::C_CORNER_BOTTOM_LEFT;
+		}
+		else if (tileID <= GC::WALL_CORNER_RANGE.y) //Wall corner bottoms right
+		{
+			game.collisionMap[tileY][tileX] = GC::C_CORNER_BOTTOM_RIGHT;
+		}
+		else //Doors
+		{
+			game.collisionMap[tileY][tileX] = GC::C_FREE_MOVEMENT;
+		}
+	}
+	else
+	{
+		game.collisionMap[tileY][tileX] = GC::C_WALL;
+	}
 }
 
 //Checks for animated tiles
 void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, const char& tileID)
 {
-	if (tileID == 9) //Lava fountain
+	if (tileID == 18) //Lava fountain
 	{
 		AnimatedTiles animTile;
-		//sf::IntRect rect = { 0, 0, 0, 0 };
 
-		animTile.sprite.setTexture(game.lavaFountainTexture);
+		animTile.sprite.setTexture(game.textures[GC::LAVA_FOUNTAIN_TEXTURE]);
 		animTile.sprite.setTextureRect({ 0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_LAVA_RECT.height });
 
 		animTile.anim = { &GC::FOUNTAIN_ANIM_LAVA, 0, 0.f };
@@ -303,12 +333,11 @@ void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, con
 
 		animatedTiles.push_back(animTile);
 	}
-	else if (tileID == 11) //Water fountain
+	else if (tileID == 19) //Water fountain
 	{
 		AnimatedTiles animTile;
-		//sf::IntRect rect = { 0, 0, 0, 0 };
 
-		animTile.sprite.setTexture(game.waterFountainTexture);
+		animTile.sprite.setTexture(game.textures[GC::WATER_FOUNTAIN_TEXTURE]);
 		animTile.sprite.setTextureRect({ 0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_WATER_RECT.height });
 
 		animTile.anim = { &GC::FOUNTAIN_ANIM_WATER, 0, 0.f };
@@ -343,7 +372,7 @@ void Room::UpdateAnimatedTiles(const GameData& game, sf::RenderWindow& window)
 bool Room::WithinRenderedArea(const GameData& game)
 {
 	//To ensure the room is at least 3 tiles into the rendered area
-	int offset = 3;
+	char offset = 3;
 
 	//Check all 4 corners of the room to see if the room is being rendered
 	if (game.mapRect.contains({ (rect.left + offset) * GC::TILE_SIZE, (rect.top + offset) * GC::TILE_SIZE }) ||

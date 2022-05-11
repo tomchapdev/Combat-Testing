@@ -39,68 +39,343 @@ void Entity::UpdateMovementVector(const Dim2Df& target)
 }
 
 //Move the entity and weapon
-void Entity::Move(GameData& game)
+void Entity::Move(const GameData& game)
 {
-	//float moveX = movementVector.x * GC::APPROX_ELAPSED, moveY = movementVector.y * GC::APPROX_ELAPSED;
-	float moveX = roundf(movementVector.x * game.elapsed), moveY = roundf(movementVector.y * game.elapsed);
+	frameMovementVector.x = (int)roundf(movementVector.x * game.elapsed);
+	frameMovementVector.y = (int)roundf(movementVector.y * game.elapsed);
 
-	std::cout << "Movement vector: (" << moveX << ", " << moveY << ")" << std::endl;
+	CheckMapCollision(game);
 
-	if (moving)
+	globalRect.left += frameMovementVector.x;
+	globalRect.top += frameMovementVector.y;
+}
+
+//Checks if movement is valid, using rectangle intersections
+void Entity::CheckMapCollision(const GameData& game)
+{
+	//Get movement booleans
+	bool movingLeft = false, movingRight = false, movingUp = false, movingDown = false;
+
+	if (frameMovementVector.x < 0)
 	{
-		globalRect.left += moveX;
-		globalRect.top += moveY;
+		movingLeft = true;
+	}
+	else if (frameMovementVector.x > 0)
+	{
+		movingRight = true;
+	}
+	if (frameMovementVector.y < 0)
+	{
+		movingUp = true;
+	}
+	else if (frameMovementVector.y > 0)
+	{
+		movingDown = true;
 	}
 
-	float x = 0.f, y = 0.f;
+	//Get collision rectangles, left and right rects based on the direction the entity is moving
+	sf::IntRect collisionBox = { (int)floorf(globalRect.left) + collisionRect.left,
+		(int)floorf(globalRect.top) + collisionRect.top + collisionRect.height - GC::FEET_COLLISION_HEIGHT,
+		collisionRect.width, GC::FEET_COLLISION_HEIGHT };
+	sf::IntRect leftTileRect = { 0, 0, 0, 0 };
+	sf::IntRect rightTileRect = { 0, 0, 0, 0 };
+	sf::IntRect intersection = { 0, 0, 0, 0 };
+	Dim2Di leftPoint = { 0, 0 };
+	Dim2Di rightPoint = { 0, 0 };
+	unsigned char leftTile = 0;
+	unsigned char rightTile = 0;
+	bool collided = false;
 
-	if (weapon.attacking)
+	//C_FREE_MOVEMENT, C_WALL, C_WALL_TOP, C_WALL_SIDE_LEFT, C_WALL_SIDE_RIGHT, C_WALL_TOP_BOTTOM_LEFT, C_WALL_TOP_BOTTOM_RIGHT, C_FOUNTAIN_BASIN,
+	//C_COLUMN_TOP, C_COLUMN_BASE, C_CORNER_BOTTOM_LEFT, C_CORNER_BOTTOM_RIGHT
+	// 
+	//Up - !Wall!, !fountain basin!, !column base!, !wall sides!
+	//Down - !Wall!, !wall tops!, !wall corners (same as wall tops)!, !column top!
+	//Left - !Wall!, !wall tops!, !wall sides!, !wall corners (same as wall sides)!, !fountain basin!, column base
+	//Right - !Wall!, wall tops, wall sides, wall corners (same as wall sides), fountain basin, column base
+
+	if (movingUp)
 	{
-		UpdateAttacks(game);
+		leftPoint = { collisionBox.left / GC::TILE_SIZE, (collisionBox.top + frameMovementVector.y) / GC::TILE_SIZE }; //Top left
+		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
 
-		//Weapon movement correction
-		if (moving)
+		if (leftTile == GC::C_WALL)
 		{
-			x -= moveX;
-			y -= moveY;
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE + 1 };
 		}
+		else if (leftTile == GC::C_WALL_SIDE_LEFT)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+		}
+		else if (leftTile == GC::C_FOUNTAIN_BASIN)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT };
+		}
+		else if (leftTile == GC::C_COLUMN_BASE)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT };
+		}
+
+
+		if (collisionBox.intersects(leftTileRect, intersection))
+		{
+			collided = true;
+			frameMovementVector.y = 0;
+		}
+
+		if (!collided)
+		{
+			rightPoint = { (collisionBox.left + collisionBox.width) / GC::TILE_SIZE, (collisionBox.top + frameMovementVector.y) / GC::TILE_SIZE }; //Top right
+			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
+
+			if (rightTile == GC::C_WALL)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE + 1 };
+			}
+			else if (rightTile == GC::C_WALL_SIDE_RIGHT)
+			{
+				rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE + 1 };
+			}
+			else if (rightTile == GC::C_FOUNTAIN_BASIN)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT };
+			}
+			else if (rightTile == GC::C_COLUMN_BASE)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT };
+			}
+
+			if (collisionBox.intersects(rightTileRect, intersection))
+			{
+				frameMovementVector.y = 0;
+			}
+		}
+
+		collided = false;
 	}
-	else
+	else if (movingDown)
 	{
-		weapon.UpdateHoldPosition(facing, localRect);
-		weapon.UpdateHoldRotation(facing);
+		leftPoint = { collisionBox.left / GC::TILE_SIZE, (collisionBox.top + collisionBox.height + frameMovementVector.y) / GC::TILE_SIZE }; //Bottom right
+		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
+
+		if (leftTile == GC::C_WALL)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) - 1, GC::TILE_SIZE, GC::TILE_SIZE };
+		}
+		else if ((leftTile == GC::C_WALL_TOP) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT))
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
+		}
+		else if (leftTile == GC::C_WALL_TOP_BOTTOM_RIGHT)
+		{
+			leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
+				(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
+		}
+		else if (leftTile == GC::C_COLUMN_TOP)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
+		}
+
+		if (collisionBox.intersects(leftTileRect, intersection))
+		{
+			collided = true;
+			frameMovementVector.y = 0;
+		}
+		
+
+		if (!collided)
+		{
+			rightPoint = { (collisionBox.left + collisionBox.width) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height + frameMovementVector.y) / GC::TILE_SIZE }; //Bottom left
+			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
+
+			if (rightTile == GC::C_WALL)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) - 1, GC::TILE_SIZE, GC::TILE_SIZE };
+			}
+			else if ((rightTile == GC::C_WALL_TOP) || (rightTile == GC::C_CORNER_BOTTOM_LEFT))
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
+			}
+			else if (rightTile == GC::C_WALL_TOP_BOTTOM_LEFT)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
+					(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
+			}
+			else if (rightTile == GC::C_COLUMN_TOP)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
+			}
+
+			if (collisionBox.intersects(rightTileRect, intersection))
+			{
+				frameMovementVector.y = 0;
+			}
+		}
+
+		collided = false;
 	}
 
-	//Weapon bobbing along to sprite's animation
-	if (anim.currentFrame == 5)
-	{
-		y -= 1;
-	}
-	else if (anim.currentFrame == 7)
-	{
-		y += 1;
-	}
-	else if (anim.currentFrame < 4 && anim.currentFrame != 0)
-	{
-		y -= (anim.currentFrame % 2) - 2;
-	}
+	//Reset collision rects
+	leftTileRect = { 0, 0, 0, 0 };
+	rightTileRect = { 0, 0, 0, 0 };
 
-	weapon.sprite.move({ x, y });
+	if (movingLeft)
+	{
+		leftPoint = { (collisionBox.left + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height - 1) / GC::TILE_SIZE }; //Bottom left
+		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
+
+		if (leftTile == GC::C_WALL)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE };
+		}
+		else if ((leftTile == GC::C_WALL_TOP) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT))
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
+		}
+		else if (leftTile == GC::C_WALL_SIDE_LEFT)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+		}
+		else if (leftTile == GC::C_WALL_SIDE_RIGHT)
+		{
+			leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+		}
+		else if (leftTile == GC::C_WALL_TOP_BOTTOM_LEFT)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
+				(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
+		}
+		else if (leftTile == GC::C_COLUMN_TOP)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
+		}
+
+		//More to go here soon
+
+		if (collisionBox.intersects(leftTileRect, intersection))
+		{
+			collided = true;
+			frameMovementVector.x = 0;
+		}
+
+		if (!collided)
+		{
+			rightPoint = { (collisionBox.left + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + 1) / GC::TILE_SIZE }; //Top left
+			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
+
+			if (rightTile == GC::C_WALL)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE - 1 };
+			}
+			else if (rightTile == GC::C_WALL_SIDE_LEFT)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+			}
+			else if (rightTile == GC::C_WALL_SIDE_RIGHT)
+			{
+				rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+			}
+			else if (rightTile == GC::C_FOUNTAIN_BASIN)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT - 1 };
+			}
+			else if (rightTile == GC::C_COLUMN_BASE)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT + 1 };
+			}
+
+			if (collisionBox.intersects(rightTileRect, intersection))
+			{
+				frameMovementVector.x = 0;
+			}
+		}
+
+		collided = false;
+	}
+	else if (movingRight)
+	{
+		leftPoint = { (collisionBox.left + collisionBox.width + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + 1) / GC::TILE_SIZE }; //Top right
+		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
+
+		if (leftTile == GC::C_WALL)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE - 1 };
+		}
+		else if (leftTile == GC::C_WALL_SIDE_LEFT)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+		}
+		else if (leftTile == GC::C_WALL_SIDE_RIGHT)
+		{
+			leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+		}
+		else if (leftTile == GC::C_FOUNTAIN_BASIN)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT - 1 };
+		}
+		else if (leftTile == GC::C_COLUMN_BASE)
+		{
+			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT + 1 };
+		}
+		//More to go here soon
+
+		if (collisionBox.intersects(leftTileRect, intersection))
+		{
+			collided = true;
+			frameMovementVector.x = 0;
+		}
+
+		if (!collided)
+		{
+			rightPoint = { (collisionBox.left + collisionBox.width + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height - 1) / GC::TILE_SIZE }; //Bottom right
+			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
+
+			if (rightTile == GC::C_WALL)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE };
+			}
+			else if ((rightTile == GC::C_WALL_TOP) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT))
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
+			}
+			else if (rightTile == GC::C_WALL_SIDE_LEFT)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+			}
+			else if (rightTile == GC::C_WALL_SIDE_RIGHT)
+			{
+				rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+			}
+			else if (rightTile == GC::C_WALL_TOP_BOTTOM_LEFT)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
+					(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
+			}
+			else if (rightTile == GC::C_COLUMN_TOP)
+			{
+				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
+			}
+
+			if (collisionBox.intersects(rightTileRect, intersection))
+			{
+				frameMovementVector.x = 0;
+			}
+		}
+
+		collided = false;
+	}
 }
 
 //Render the entity if it's on the rendered map area
 void Entity::Render(sf::RenderWindow& window, const GameData& game)
 {
 	//Check if in rendered area
-	if (isPlayer)
-	{
-		nearPlayer = UpdateSpritePosition(game, sprite, globalRect, localRect);
+	nearPlayer = UpdateSpritePosition(game, sprite, globalRect, localRect);
 
-		if (nearPlayer && weapon.visible && !weapon.attacking)
-		{
-			UpdateSpritePosition(game, weapon.sprite, weapon.globalRect, weapon.localRect);
-		}
-	}
+	/*if (nearPlayer && weapon.visible && !weapon.attacking)
+	{
+		UpdateSpritePosition(game, weapon.sprite, weapon.globalRect, weapon.localRect);
+	}*/
 
 	if (nearPlayer || isPlayer)
 	{
@@ -157,21 +432,63 @@ void Entity::Render(sf::RenderWindow& window, const GameData& game)
 }
 
 //Updates any ongoing attacks
-void Entity::UpdateAttacks(const GameData& game)
+void Entity::UpdateAttacks(const GameData& game, std::vector<Projectile>& proj)
 {
 	if (weapon.attack0.active)
 	{
-		weapon.attack0.UpdateAttack(game);
+		weapon.attack0.UpdateAttack(game, proj);
 	}
 	else if (weapon.hasTwoAttacks && weapon.attack1.active)
 	{
-		weapon.attack1.UpdateAttack(game);
+		weapon.attack1.UpdateAttack(game, proj);
 	}
 	else
 	{
 		weapon.attacking = false;
 		canAttack = true;
 	}
+}
+
+//Update the weapon's state
+void Entity::UpdateWeapon(const GameData& game, std::vector<Projectile>& proj)
+{
+	float x = 0.f, y = 0.f;
+
+	if (weapon.attacking)
+	{
+		UpdateAttacks(game, proj);
+
+		//Weapon movement correction
+		if (moving && weapon.visible)
+		{
+			x -= frameMovementVector.x;
+			y -= frameMovementVector.y;
+		}
+	}
+	else
+	{
+		weapon.UpdateHoldPosition(game, facing, localRect);
+		weapon.UpdateHoldRotation(facing);
+	}
+
+	//Weapon bobbing along to sprite's animation, this needs replacing with a more entity-agnostic method
+	if (weapon.visible)
+	{
+		if (anim.currentFrame == 5)
+		{
+			y -= 1;
+		}
+		else if (anim.currentFrame == 7)
+		{
+			y += 1;
+		}
+		else if (anim.currentFrame < 4 && anim.currentFrame != 0)
+		{
+			y -= (anim.currentFrame % 2) - 2;
+		}
+	}
+
+	weapon.sprite.move({ x, y });
 }
 
 void Entity::TakeDamage()
