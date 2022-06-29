@@ -69,7 +69,7 @@ struct Motion
 	void UpdateTotals(const GameData& game);
 
 	//Updates the position of the global rect
-	void UpdatePosition(sf::FloatRect& globalRect, const bool& followingFacing, const float& initialAngle, const float& radius, const DirectionalAngle& facing);
+	void UpdatePosition(sf::FloatRect& globalRect, const bool& followingFacing, const DirectionalAngle& facing, const float& initialAngle, const float& radius);
 
 	//Resets the motion back to original values
 	void ResetTotals();
@@ -88,6 +88,8 @@ namespace GC
 	//Line motion data
 	//Normal attacks
 	const LineMotionData THRUST_LINE = { { 16.f, 1.f }, 0.2f }; //Weapon thrust, movement of normal thrust
+	const LineMotionData JUMP_LINE = { { 64.f, 1.f }, 0.3f }; //Jump attack, movement
+	const LineMotionData CHARGE_RELEASE_LINE = { { 160.f, 1.f }, 0.7f }; //Jump attack, movement
 	//Windup attacks
 	const LineMotionData WINDUP_LINE_SLOW = { { 8.f, -1.f }, 1.f }; //Slow pullback, attack windup
 	const LineMotionData WINDUP_LINE_FAST = { { 8.f, -1.f }, 0.5f }; //Fast pullback, attack windup
@@ -108,6 +110,9 @@ namespace GC
 	const CircularMotionData SPIN_SLOW = { 360.f, 0.4f }; //Slow spin
 	const CircularMotionData SPIN_FAST = { 360.f, 0.2f }; //Fast spin
 	const CircularMotionData SPIN_HELL = { 3600.f, 1.f }; //Hell spin... of doom
+	const CircularMotionData JUMP_SPIN = { 45.f, 0.3f }; //Jump attack, spin
+	const CircularMotionData CHARGE_WINDUP_SPIN = { 45.f, 0.5f }; //Charge winup spin
+	const CircularMotionData NEGLIGIBLE_SPIN = { 0.1f, 1.f }; //No spin, to maintain a spin from previous motion
 
 	//Motions																							(bools: circular, line, spin, damage, loop)
 	//Normal melee motions
@@ -120,10 +125,14 @@ namespace GC
 	const Motion HEAVY_THRUST_RELEASE = { {}, &WINDUP_THRUST, {},												false, true, false, true, false };
 	//Normal projectile motion 
 	const Motion THROW_PROJECTILE_FAST = { {}, &PROJECTILE_THROW, {},											false, true, false, false, false };
-	const Motion SPINNING_THROW_SLOW = { {}, &PROJECTILE_LINE_SLOW, &SPIN_SLOW,									false, true, true, true, false };
+	const Motion SPINNING_THROW_SLOW = { {}, &PROJECTILE_LINE_SLOW, &SPIN_FAST,									false, true, true, true, false };
 	const Motion STRAIGHT_THROW_SLOW = { {}, &PROJECTILE_LINE_SLOW, {},											false, true, false, true, false };
 	//Heavy projectile motions
 
+	//Enemy unique attack motions
+	const Motion HORN_STAB_JUMP = { {}, &JUMP_LINE, &JUMP_SPIN,													false, true, true, true, false };
+	const Motion CHARGE_WINDUP = { {}, {}, &CHARGE_WINDUP_SPIN,													false, false, true, false, false };
+	const Motion CHARGE_RELEASE = { {}, &CHARGE_RELEASE_LINE, &NEGLIGIBLE_SPIN,									false, true, true, true, false };
 	//Super attacks
 	const Motion SWORD_OF_DOOM = { &SPIN_HELL, &PROJECTILE_LINE_FAST, &SPIN_HELL,								true, true, true, true, false };
 }

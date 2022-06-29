@@ -265,13 +265,21 @@ void Room::AlterCollisionMap(GameData& game, const int& x, const int& y, const c
 
 	if (tileID > GC::WALL_RANGE.y)
 	{
-		if ((tileID == GC::T_WATER_FOUNTAIN_BASIN) || (tileID == GC::T_LAVA_FOUNTAIN_BASIN)) //Fountain basins
+		if (tileID == GC::T_WALL_COLUMN_BASE) //Column bases
+		{
+			game.collisionMap[tileY][tileX] = GC::C_COLUMN_BASE;
+		}
+		else if ((tileID == GC::T_WATER_FOUNTAIN_BASIN) || (tileID == GC::T_LAVA_FOUNTAIN_BASIN)) //Fountain basins
 		{
 			game.collisionMap[tileY][tileX] = GC::C_FOUNTAIN_BASIN;
 		}
-		else if ((tileID == GC::T_WALL_COLUMN_BASE) || (tileID == GC::T_COLUMN_BASE)) //Column bases
+		else if (tileID == GC::T_WALL_COLUMN_TOP_FLOOR) //Column bases
 		{
-			game.collisionMap[tileY][tileX] = GC::C_COLUMN_BASE;
+			game.collisionMap[tileY][tileX] = GC::C_COLUMN_TOP;
+		}
+		else if (tileID == GC::T_FOUNTAIN_TOP_FLOOR) //Column bases
+		{
+			game.collisionMap[tileY][tileX] = GC::C_FOUNTAIN_TOP;
 		}
 		else if (tileID < GC::WALL_SIDE_RANGE.x) //Floors
 		{

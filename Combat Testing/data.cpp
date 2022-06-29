@@ -13,7 +13,7 @@ void GameData::Init(sf::RenderWindow& window)
 	window.create(sf::VideoMode(screenResolution.x, screenResolution.y), "DD Combat Testing", sf::Style::Fullscreen);
 
 	//Vectors
-	textures.resize(GC::MAX_TEXTURES);
+	textures.resize(GC::NUM_TEXTURES);
 	collisionMap.resize(GC::MAP_SIZE_TILES);
 	for (unsigned char index = 0; index < GC::MAP_SIZE_TILES; ++index)
 	{
@@ -158,16 +158,15 @@ bool UpdateSpritePosition(const GameData& game, sf::Sprite& sprite, const sf::Fl
 	bool nearPlayer = false;
 
 	//Check if entity is wholly inside the drawn map area
-	if ((globalRect.left > game.mapRect.left) && ((globalRect.left + globalRect.width) < (game.mapRect.left + game.mapRect.width))
-		&& (globalRect.top > game.mapRect.top) && ((globalRect.top + globalRect.height) < (game.mapRect.top + game.mapRect.height)))
+	if (sf::FloatRect(game.mapRect).intersects(globalRect))
 	{
 		nearPlayer = true;
 
 		//Set position on rendered map
-		localRect = globalRect;
-		localRect.left = roundf(localRect.left - game.mapRect.left);
-		localRect.top = roundf(localRect.top - game.mapRect.top);
-		sprite.setPosition(localRect.left, localRect.top);
+		localRect.left = roundf(globalRect.left - game.mapRect.left);
+		localRect.top = roundf(globalRect.top - game.mapRect.top);
+		Dim2Df origin = sprite.getOrigin();
+		sprite.setPosition(localRect.left + origin.x, localRect.top + origin.y);
 	}
 
 	return nearPlayer;

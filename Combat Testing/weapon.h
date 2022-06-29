@@ -16,7 +16,7 @@ struct ProjectileData
 //Projectile
 struct Projectile
 {
-	//Setup
+	//Setup stats
 	Motion motion{};
 	char damage = 0;
 
@@ -32,6 +32,9 @@ struct Projectile
 	sf::FloatRect localRect = { 0.f, 0.f, 0.f, 0.f };
 	float angle = 0.f;
 
+	//Pointers
+	DirectionalAngle* facing;
+
 	//Functional variables
 	sf::Sprite sprite{};
 
@@ -45,9 +48,10 @@ struct Projectile
 //Attack
 struct Attack
 {
-	//Setup
+	//Setup stats
 	Motion motions[GC::MAX_MOTIONS]; //Attack motions
 	const ProjectileData* projectileData{}; //Data of this attack's projectile
+	short range = 0; //Attack range, in pixels (0 means default weapon range, -1 means unlimited)
 
 	//Setup bools
 	bool summonProjectile = false; //If this attack summons a projectile after the motion has finished
@@ -58,9 +62,10 @@ struct Attack
 	bool alternatingSwingDirection = false; //If this attack's inital position and direction changes on each swing
 
 	//Operational bools
-	bool active = false;
-	bool attackRelease = false;
-	bool motionFinished = false;
+	bool active = false; //If attack is active
+	bool attackRelease = false; //If second motion should begin
+	bool motionFinished = false; //If all motions for this attack are finished
+	bool entityIsWeapon = false; //If the entity sprite is the attacking object
 
 	//Positioning
 	sf::FloatRect globalRect{ 0.f, 0.f, 0.f, 0.f };
@@ -78,7 +83,7 @@ struct Attack
 	float* attackSpeed{};
 
 	//Initiates attack
-	void Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect& entityRect, DirectionalAngle& entityFacing, float& entityAttackSpeed, float& holdDistance, Dim2Df& holdVector);
+	void Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect& entityRect, DirectionalAngle& entityFacing, float& entityAttackSpeed, float& holdDistance, Dim2Df& holdVector, const bool& eIsWep);
 
 	//Updates attack
 	void UpdateAttack(const GameData& game, std::vector<Projectile>& projList);
@@ -105,17 +110,15 @@ struct Weapon
 
 	//Setup bools
 	bool hasTwoAttacks = false; //Weapon has a second attack or not
-	bool visible = false; //Holding a weapon or not
+	bool entityIsWeapon = false; //If entity is the weapon
 
-	//Main stats
-	float range = 0.f; //How far the weapon can reach
-	short int damage = 1; //How much damage this
-	short int knockbackStrength = 0; //Power of knockback this weapon can inflict
+	//Operational bools
+	bool visible = false; //Holding a weapon or not
 
 	//SFML
 	sf::Texture* texture{}; //Weapon texture
 	sf::Sprite sprite{}; //Weapon sprite
-
+	
 	//Operating bools
 	bool attacking = false; //In attack animation
 	bool active = false; //Is weapon currently being held
@@ -136,7 +139,7 @@ struct Weapon
 };
 
 //Moves the global rect to it's original position
-void RepositionGlobalRectToOrigin(sf::FloatRect& globalRect, const Dim2Df& origin);
+void RepositionGlobalRectToOrigin(sf::FloatRect& globalRect, sf::Sprite& sprite, const Dim2Df& origin);
 
 //Updates the rotation of the sprite
 void UpdateRotation(const Motion& motion, sf::Sprite& sprite, const float& initialAngle);
@@ -151,23 +154,30 @@ namespace GC
 {
 	//Projectile data
 	const ProjectileData PROJECTILE_DATA_STRAIGHT_THROW = { &STRAIGHT_THROW_SLOW, &SWORD_RECT, 1, 1, 18.f };
-	const ProjectileData PROJECTILE_DATA_SPINNING_THROW = { &SPINNING_THROW_SLOW, &SWORD_RECT, 1, 21, 18.f };
+	const ProjectileData PROJECTILE_DATA_SPINNING_THROW = { &SPINNING_THROW_SLOW, &SWORD_RECT, 1, 1, 18.f };
 
-	//Attacks																	(bools: summonProjectile, movingWithEntity, followingFacing, hasTwoMotions, arcCentredOnInitialAngle, hasRandomSwingDirection)
+	//Attacks										(bools: summonProjectile, movingWithEntity, followingFacing, hasTwoMotions, arcCentredOnInitialAngle, hasRandomSwingDirection)
 	//Swing
-	const Attack NORMAL_SWING_ATTACK = { {NORMAL_SWING_RELEASE}, {},											false, true, false, false, true, true }; //Normal swing attack
-	const Attack HEAVY_SWING_ATTACK = { {HEAVY_SWING_WINDUP, GC::HEAVY_SWING_RELEASE}, {},						false, true, true, true, false, false }; //Heavy swing attack
+	const Attack NORMAL_SWING_ATTACK = { {NORMAL_SWING_RELEASE}, {}, 0,												false, true, false, false, true, true }; //Normal swing attack
+	const Attack HEAVY_SWING_ATTACK = { {HEAVY_SWING_WINDUP, GC::HEAVY_SWING_RELEASE}, {}, 12,						false, true, true, true, false, false }; //Heavy swing attack
 	//Thrust
-	const Attack NORMAL_THRUST_ATTACK = { {NORMAL_THRUST_RELEASE}, {},											false, true, true, false, false, false }; //Normal thrust attack
-	const Attack HEAVY_THRUST_ATTACK = { {HEAVY_THRUST_WINDUP, HEAVY_THRUST_RELEASE}, {},						false, true, true, true, false, false }; //Heavy thrust attack
+	const Attack NORMAL_THRUST_ATTACK = { {NORMAL_THRUST_RELEASE}, {}, 16,											false, true, true, false, false, false }; //Normal thrust attack
+	const Attack HEAVY_THRUST_ATTACK = { {HEAVY_THRUST_WINDUP, HEAVY_THRUST_RELEASE}, {}, 24,						false, true, true, true, false, false }; //Heavy thrust attack
 	//Throw
-	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {THROW_PROJECTILE_FAST}, &PROJECTILE_DATA_STRAIGHT_THROW,		true, true, true, false, false, false }; //Normal throw attack
-	const Attack NORMAL_SPINNING_THROW_ATTACK = { {THROW_PROJECTILE_FAST}, &PROJECTILE_DATA_SPINNING_THROW,		true, true, true, false, false, false }; //Normal spinning throw attack
+	const Attack NORMAL_STRAIGHT_THROW_ATTACK = { {THROW_PROJECTILE_FAST}, &PROJECTILE_DATA_STRAIGHT_THROW, -1,		true, true, true, false, false, false }; //Normal throw attack
+	const Attack NORMAL_SPINNING_THROW_ATTACK = { {THROW_PROJECTILE_FAST}, &PROJECTILE_DATA_SPINNING_THROW, -1,		true, true, true, false, false, false }; //Normal spinning throw attack
 	//Shoot
 
 	//Special
-	const Attack SWORD_OF_DOOM_ATTACK = { {SWORD_OF_DOOM}, {},													false, false, true, false, false, false }; //Sword of doom attack
+	const Attack SWORD_OF_DOOM_ATTACK = { {SWORD_OF_DOOM}, {}, 240,													false, false, true, false, false, false }; //Sword of doom attack
 
-	//Weapons
-	//const Weapon;
+	//Enemy attacks
+	const Attack HORN_STAB = { {HORN_STAB_JUMP}, {}, 64,															false, false, false, false, false, false }; //Horn stab jump attack
+	const Attack CHARGE = { {CHARGE_WINDUP, CHARGE_RELEASE}, {}, 160,												false, false, false, true, false, false }; //Horn charge attack
+
+	//Weapons															(bools: hasTwoAttacks, entityIsWeapon)
+	const Weapon RUSTED_SWORD = { NORMAL_SWING_ATTACK, HEAVY_THRUST_ATTACK,		true, false };
+	const Weapon BIG_FANCY_SWORD = { NORMAL_SWING_ATTACK, HEAVY_SWING_ATTACK,	true, false };
+	const Weapon SPEAR = { NORMAL_THRUST_ATTACK, HEAVY_THRUST_ATTACK,			true, false };
+	const Weapon IMP_WEAPON = { HORN_STAB, CHARGE,								true, true };
 }

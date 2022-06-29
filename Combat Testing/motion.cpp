@@ -103,7 +103,7 @@ void Motion::UpdateTotals(const GameData& game)
 }
 
 //Updates the position of the global rect
-void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFacing, const float& initialAngle, const float& radius, const DirectionalAngle& facing)
+void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFacing, const DirectionalAngle& facing, const float& initialAngle, const float& radius)
 {
 	Dim2Df lineTranslation = { 0.f, 0.f }, circularTranslation = { 0.f, 0.f };
 	float angle;
@@ -132,13 +132,16 @@ void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFaci
 	if (circular)
 	{
 		//Correct arcs when changing direction
-		if (followingFacing)
+		if (followingFacing && (circular || spin))
 		{
 			if (facingRight && (facing.direction == GC::WEST || facing.direction == GC::SOUTH))
 			{
 				facingRight = false;
-				circleSpeed *= -1.f;
-				circleTotal *= -1.f;
+				if (circular)
+				{
+					circleSpeed *= -1.f;
+					circleTotal *= -1.f;
+				}
 				if (spin)
 				{
 					spinSpeed *= -1.f;
@@ -148,8 +151,11 @@ void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFaci
 			else if (!facingRight && (facing.direction == GC::EAST || facing.direction == GC::NORTH))
 			{
 				facingRight = true;
-				circleSpeed *= -1.f;
-				circleTotal *= -1.f;
+				if (circular)
+				{
+					circleSpeed *= -1.f;
+					circleTotal *= -1.f;
+				}
 				if (spin)
 				{
 					spinSpeed *= -1.f;

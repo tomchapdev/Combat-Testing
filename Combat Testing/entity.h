@@ -31,6 +31,7 @@ struct Entity
 	bool isPlayer = false; //Player or Enemy
 	bool isAlive = true; //Alive or dead
 	bool canAttack = true; //Ability to attack
+	bool invulnerable = false; //Can be damaged or not
 	bool moving = false; //Moving or still
 	bool facingRight = true; //Facing right or left
 	bool nearPlayer = false; //In the rendered map area or not
