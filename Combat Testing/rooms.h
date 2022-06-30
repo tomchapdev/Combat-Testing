@@ -54,9 +54,6 @@ struct Room
 	//Updates animated tiles
 	void UpdateAnimatedTiles(const GameData& game, sf::RenderWindow& window);
 
-	//Checks if the room is within the rendered map area
-	bool WithinRenderedArea(const GameData& game);
-
 	//Finds enemy spawn locations
 	void FindSpawners();
 };

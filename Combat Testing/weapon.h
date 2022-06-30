@@ -6,8 +6,8 @@
 //const Motion* motion, const sf::IntRect* textureRect, char damage, char num, char spread
 struct ProjectileData
 {
-	const Motion* motion{}; //Motion of this projectile
-	const sf::IntRect* textureRect{}; //Pointer to the texture used for this projectile
+	const Motion* motion; //Motion of this projectile
+	float radius = 0.f; //Radius of any circular motion
 	char baseDamage = 0; //Base damage of the projectile
 	char num = 0; //Number of projectiles in this attack
 	float spread = 0.f; //How far apart the extra projectiles are spread, from the initial angle, in degrees
@@ -28,12 +28,11 @@ struct Projectile
 
 	//Positioning
 	Dim2Df origin = { 0.f, 0.f };
-	sf::FloatRect globalRect = { 0.f, 0.f, 0.f, 0.f };
-	sf::FloatRect localRect = { 0.f, 0.f, 0.f, 0.f };
 	float angle = 0.f;
 
 	//Pointers
-	DirectionalAngle* facing;
+	DirectionalAngle* facing = nullptr;
+	ProjectileData data{};
 
 	//Functional variables
 	sf::Sprite sprite{};
@@ -50,7 +49,7 @@ struct Attack
 {
 	//Setup stats
 	Motion motions[GC::MAX_MOTIONS]; //Attack motions
-	const ProjectileData* projectileData{}; //Data of this attack's projectile
+	const ProjectileData* projectileData = nullptr; //Data of this attack's projectile
 	short range = 0; //Attack range, in pixels (0 means default weapon range, -1 means unlimited)
 
 	//Setup bools
@@ -68,31 +67,26 @@ struct Attack
 	bool entityIsWeapon = false; //If the entity sprite is the attacking object
 
 	//Positioning
-	sf::FloatRect globalRect{ 0.f, 0.f, 0.f, 0.f };
-	sf::FloatRect localRect{ 0.f, 0.f, 0.f, 0.f };
 	Dim2Df origin{};
 	float initialAngle = 0.f;
 	char swingDirection = 1;
 
 	//Pointers
-	sf::Sprite* sprite{};
-	sf::FloatRect* originRect{};
-	Dim2Df* originRectOffset{};
-	DirectionalAngle* facing{};
-	float* radius{};
-	float* attackSpeed{};
+	sf::Sprite* sprite = nullptr;
+	sf::Sprite* entitySprite = nullptr;
+	Dim2Df* originRectOffset = nullptr;
+	DirectionalAngle* facing = nullptr;
+	float* radius = nullptr;
+	float* attackSpeed = nullptr;
 
 	//Initiates attack
-	void Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect& entityRect, DirectionalAngle& entityFacing, float& entityAttackSpeed, float& holdDistance, Dim2Df& holdVector, const bool& eIsWep);
+	void Init(const GameData& game, sf::Sprite& motionSprite, sf::Sprite* eSprite, DirectionalAngle& entityFacing, float& entityAttackSpeed, float& holdDistance, const bool& eIsWep);
 
 	//Updates attack
 	void UpdateAttack(const GameData& game, std::vector<Projectile>& projList);
 
 	//Update loop for attack
 	void UpdateAttackMotion(const GameData& game, Motion& motion);
-
-	//Moves the global rect to it's original position around the entity
-	void RepositionGlobalRectToEntity();
 
 	//Adds projectiles to the list
 	void SpawnProjectiles(const GameData& game, std::vector<Projectile>& projList);
@@ -116,7 +110,7 @@ struct Weapon
 	bool visible = false; //Holding a weapon or not
 
 	//SFML
-	sf::Texture* texture{}; //Weapon texture
+	sf::Texture* texture = nullptr; //Weapon texture
 	sf::Sprite sprite{}; //Weapon sprite
 	
 	//Operating bools
@@ -125,21 +119,16 @@ struct Weapon
 
 	//Position
 	float holdDistance = 0.f; //How far away the weapon is held
-	Dim2Df holdOrigin = { 0.f, 0.f }; //The point that the weapon will rotate around, from top left of entity's sprite
-	Dim2Df holdVector = { 0.f, 0.f }; //Vector from origin, where the weapon will be held
 
 	//Initializes the weapon from a template
 	void Init(const char& type);
 
 	//Updates the position of the weapon
-	void UpdateHoldPosition(const GameData& game, const DirectionalAngle& facing, const sf::FloatRect& entityRect);
+	void UpdateHoldPosition(const DirectionalAngle& facing, const Dim2Df holdOrigin);
 
 	//Updates the rotation of the weapon
 	void UpdateHoldRotation(const DirectionalAngle& facing);
 };
-
-//Moves the global rect to it's original position
-void RepositionGlobalRectToOrigin(sf::FloatRect& globalRect, sf::Sprite& sprite, const Dim2Df& origin);
 
 //Updates the rotation of the sprite
 void UpdateRotation(const Motion& motion, sf::Sprite& sprite, const float& initialAngle);
@@ -153,8 +142,8 @@ void UpdateProjectiles(const GameData& game, sf::RenderWindow& window, std::vect
 namespace GC
 {
 	//Projectile data
-	const ProjectileData PROJECTILE_DATA_STRAIGHT_THROW = { &STRAIGHT_THROW_SLOW, &SWORD_RECT, 1, 1, 18.f };
-	const ProjectileData PROJECTILE_DATA_SPINNING_THROW = { &SPINNING_THROW_SLOW, &SWORD_RECT, 1, 1, 18.f };
+	const ProjectileData PROJECTILE_DATA_STRAIGHT_THROW = { &STRAIGHT_THROW_SLOW, 0.f, 1, 1, 18.f };
+	const ProjectileData PROJECTILE_DATA_SPINNING_THROW = { &SPINNING_THROW_SLOW, 0.f, 1, 1, 18.f };
 
 	//Attacks										(bools: summonProjectile, movingWithEntity, followingFacing, hasTwoMotions, arcCentredOnInitialAngle, hasRandomSwingDirection)
 	//Swing

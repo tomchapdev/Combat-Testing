@@ -103,7 +103,7 @@ void Motion::UpdateTotals(const GameData& game)
 }
 
 //Updates the position of the global rect
-void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFacing, const DirectionalAngle& facing, const float& initialAngle, const float& radius)
+void Motion::UpdatePosition(sf::Sprite* sprite, const bool& followingFacing, const DirectionalAngle& facing, const float& initialAngle, const float& radius)
 {
 	Dim2Df lineTranslation = { 0.f, 0.f }, circularTranslation = { 0.f, 0.f };
 	float angle;
@@ -171,8 +171,7 @@ void Motion::UpdatePosition(sf::FloatRect& globalRect, const bool& followingFaci
 	}
 
 	//Translate globalRect
-	globalRect.left += lineTranslation.x + circularTranslation.x;
-	globalRect.top += lineTranslation.y + circularTranslation.y;
+	sprite->move(lineTranslation.x + circularTranslation.x, lineTranslation.y + circularTranslation.y);
 }
 
 //Resets the motion back to original values

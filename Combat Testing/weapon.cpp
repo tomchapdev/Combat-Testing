@@ -14,12 +14,11 @@ void Projectile::Update(const GameData& game)
 	{
 		//Setup
 		motion.UpdateTotals(game);
-		RepositionGlobalRectToOrigin(globalRect, sprite, origin);
+		sprite.setPosition(origin);
 
-		motion.UpdatePosition(globalRect, followingFacing, *facing, angle, {});
+		motion.UpdatePosition(&sprite, followingFacing, *facing, angle, data.radius);
 		UpdateRotation(motion, sprite, angle);
-		UpdateSpritePosition(game, sprite, globalRect, localRect);
-		
+		 
 		//COLLISION DETECTION NEEDS TO GO HERE!
 
 		//Time
@@ -38,7 +37,7 @@ void Projectile::Render(sf::RenderWindow& window)
 }
 
 //Initiates attack
-void Attack::Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect& entityRect, DirectionalAngle& entityFacing, float& entityAttackSpeed, float& holdDistance, Dim2Df& holdOrigin, const bool& eIsWep)
+void Attack::Init(const GameData& game, sf::Sprite& motionSprite, sf::Sprite* eSprite, DirectionalAngle& entityFacing, float& entityAttackSpeed, float& holdDistance, const bool& eIsWep)
 {
 	active = true;
 	motionFinished = false;
@@ -47,22 +46,18 @@ void Attack::Init(const GameData& game, sf::Sprite& motionSprite, sf::FloatRect&
 
 	if (entityIsWeapon || movingWithEntity)
 	{
-		originRect = &entityRect;
+		entitySprite = eSprite;
 	}
 	if (!movingWithEntity)
 	{
-		origin.x = motionSprite.getPosition().x + game.mapRect.left;
-		origin.y = motionSprite.getPosition().y + game.mapRect.top;
+		origin.x = sprite->getPosition().x;
+		origin.y = sprite->getPosition().y;
 	}
 
 	facing = &entityFacing;
 	attackSpeed = &entityAttackSpeed;
 	radius = &holdDistance;
-	originRectOffset = &holdOrigin;
 	initialAngle = GetFullAngleInDegrees(*facing);
-
-	globalRect.left = sprite->getPosition().x + game.mapRect.left;
-	globalRect.top = sprite->getPosition().y + game.mapRect.top;
 
 	if (alternatingSwingDirection)
 	{
@@ -130,11 +125,11 @@ void Attack::UpdateAttack(const GameData& game, std::vector<Projectile>& projLis
 	{
 		if (movingWithEntity)
 		{
-			RepositionGlobalRectToEntity();
+			sprite->setPosition(entitySprite->getPosition());
 		}
 		else
 		{
-			RepositionGlobalRectToOrigin(globalRect, *sprite, origin);
+			sprite->setPosition(origin);
 		}
 
 		if (followingFacing)
@@ -142,8 +137,7 @@ void Attack::UpdateAttack(const GameData& game, std::vector<Projectile>& projLis
 			initialAngle = GetFullAngleInDegrees(*facing);
 		}
 
-		motions[0].UpdatePosition(globalRect, followingFacing, *facing, initialAngle, *radius);
-		UpdateSpritePosition(game, *sprite, globalRect, localRect);
+		motions[0].UpdatePosition(sprite, followingFacing, *facing, initialAngle, *radius);
 
 		if (entityIsWeapon)
 		{
@@ -194,21 +188,14 @@ void Attack::UpdateAttackMotion(const GameData& game, Motion& motion)
 		//Motion position
 		if (movingWithEntity)
 		{
-			RepositionGlobalRectToEntity();
+			sprite->setPosition(entitySprite->getPosition());
 		}
 		else
 		{
-			RepositionGlobalRectToOrigin(globalRect, *sprite, origin);
+			sprite->setPosition(origin);
 		}
 
-		motion.UpdatePosition(globalRect, followingFacing, *facing, initialAngle, *radius);
-
-		if (entityIsWeapon)
-		{
-			*originRect = globalRect;
-		}
-
-		UpdateSpritePosition(game, *sprite, globalRect, localRect);
+		motion.UpdatePosition(sprite, followingFacing, *facing, initialAngle, *radius);
 
 		if (entityIsWeapon)
 		{
@@ -226,13 +213,6 @@ void Attack::UpdateAttackMotion(const GameData& game, Motion& motion)
 			motion.timer -= (1.f / (float)GC::FRAMERATE);
 		}
 	}
-}
-
-//Moves the global rect to it's original position around the entity, used when moving with entity
-void Attack::RepositionGlobalRectToEntity()
-{
-	globalRect.left = originRect->left + originRectOffset->x - sprite->getOrigin().x;
-	globalRect.top = originRect->top + originRectOffset->y - sprite->getOrigin().y;
 }
 
 //Adds projectiles to the list
@@ -302,17 +282,13 @@ void Attack::SpawnProjectiles(const GameData& game, std::vector<Projectile>& pro
 		else if (index < GC::MAX_PROJECTILES)
 		{
 			projList[index].active = true;
-			projList[index].motion = *projectileData->motion;
-			projList[index].damage = projectileData->baseDamage;
-			projList[index].sprite.setTextureRect(*projectileData->textureRect);
+			projList[index].data = *projectileData;
+			projList[index].motion = *projList[index].data.motion;
 
-			projList[index].sprite.setOrigin(projList[index].sprite.getGlobalBounds().width / 2.0f, projList[index].sprite.getGlobalBounds().height / 2.0f);
-			//projList[index].sprite.setPosition({ localRect.left + projList[index].sprite.getOrigin().x, localRect.top + projList[index].sprite.getOrigin().y });
+			projList[index].sprite.setTextureRect(sprite->getTextureRect());
+			projList[index].sprite.setOrigin(sprite->getOrigin());
 			projList[index].sprite.setPosition(sprite->getPosition());
-			projList[index].globalRect = globalRect;
-
-			/*projList[index].origin.x = globalRect.left + projList[index].sprite.getOrigin().x;
-			projList[index].origin.y = globalRect.top + projList[index].sprite.getOrigin().y;*/
+			projList[index].origin = sprite->getPosition();
 
 			if (hasSpread)
 			{
@@ -358,16 +334,9 @@ void Weapon::Init(const char& type)
 }
 
 //Updates the position of the weapon
-void Weapon::UpdateHoldPosition(const GameData& game, const DirectionalAngle& facing, const sf::FloatRect& entityRect)
+void Weapon::UpdateHoldPosition(const DirectionalAngle& facing, const Dim2Df holdOrigin)
 {
-	//Calculate position
-	Dim2Df position;
-	position = CalculateCircularMotionVector(holdDistance, GetFullAngleInRads(facing));
-	position.x += entityRect.left + holdOrigin.x;
-	position.y += entityRect.top + holdOrigin.y;
-
-	//Set position
-	sprite.setPosition(position.x, position.y);
+	sprite.setPosition(holdOrigin + CalculateCircularMotionVector(holdDistance, GetFullAngleInRads(facing)));
 }
 
 //Updates the rotation of the weapon
@@ -383,13 +352,6 @@ void Weapon::UpdateHoldRotation(const DirectionalAngle& facing)
 	{
 		sprite.setRotation(-GC::WEAPON_HOVER_ROTATION);
 	}
-}
-
-//Moves the global rect to it's original position
-void RepositionGlobalRectToOrigin(sf::FloatRect& globalRect, sf::Sprite& sprite, const Dim2Df& origin)
-{
-	sprite.setPosition(origin);
-	globalRect = sprite.getGlobalBounds();
 }
 
 //Updates the rotation of the sprite

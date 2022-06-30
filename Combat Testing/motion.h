@@ -35,9 +35,9 @@ spin can keep going until the end of any motion)*/
 struct Motion
 {
 	//Data
-	const CircularMotionData* circleData{}; //Circular motion data
-	const LineMotionData* lineData{}; //Line motion data
-	const CircularMotionData* spinData{}; //Spin circular motion data
+	const CircularMotionData* circleData = nullptr; //Circular motion data
+	const LineMotionData* lineData = nullptr; //Line motion data
+	const CircularMotionData* spinData = nullptr; //Spin circular motion data
 
 	//Setup bools
 	bool circular = false; //Is this a circular motion
@@ -69,7 +69,7 @@ struct Motion
 	void UpdateTotals(const GameData& game);
 
 	//Updates the position of the global rect
-	void UpdatePosition(sf::FloatRect& globalRect, const bool& followingFacing, const DirectionalAngle& facing, const float& initialAngle, const float& radius);
+	void UpdatePosition(sf::Sprite* sprite, const bool& followingFacing, const DirectionalAngle& facing, const float& initialAngle, const float& radius);
 
 	//Resets the motion back to original values
 	void ResetTotals();

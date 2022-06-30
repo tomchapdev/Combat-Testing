@@ -13,22 +13,22 @@ void Entity::InitAttack(const GameData& game, const char& attack)
 	{
 		if (weapon.entityIsWeapon)
 		{
-			weapon.attack0.Init(game, sprite, globalRect, facing, attackSpeed, weapon.holdDistance, weapon.holdOrigin, true);
+			weapon.attack0.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true);
 		}
 		else
 		{
-			weapon.attack0.Init(game, weapon.sprite, globalRect, facing, attackSpeed, weapon.holdDistance, weapon.holdOrigin, false);
+			weapon.attack0.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false);
 		}
 	}
 	else if (weapon.hasTwoAttacks && attack == GC::SECOND_ATTACK)
 	{
 		if (weapon.entityIsWeapon)
 		{
-			weapon.attack1.Init(game, sprite, globalRect, facing, attackSpeed, weapon.holdDistance, weapon.holdOrigin, true);
+			weapon.attack1.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true);
 		}
 		else
 		{
-			weapon.attack1.Init(game, weapon.sprite, globalRect, facing, attackSpeed, weapon.holdDistance, weapon.holdOrigin, false);
+			weapon.attack1.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false);
 		}
 	}
 }
@@ -42,12 +42,8 @@ void Entity::InitKnockback()
 //Updates movement vector based on target coords
 void Entity::UpdateMovementVector(const Dim2Df& target)
 {
-	//Find origin
-	Dim2Df origin = { globalRect.left + bodyCentre.x,
-						globalRect.top + bodyCentre.y };
-
 	//Get vector between points, then calculate directional angle using vector
-	facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(origin, target));
+	facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(sprite.getPosition(), target));
 
 	movementVector = CalculateVectorOfMagnitude(facing, speed);
 }
@@ -60,8 +56,7 @@ void Entity::Move(const GameData& game)
 
 	CheckMapCollision(game);
 
-	globalRect.left += frameMovementVector.x;
-	globalRect.top += frameMovementVector.y;
+	sprite.move(Dim2Df(frameMovementVector));
 }
 
 //Checks if movement is valid, using rectangle intersections
@@ -90,9 +85,10 @@ void Entity::CheckMapCollision(const GameData& game)
 
 	//Initialize collision rectangles, left and right rects based on the direction the entity is moving
 	//example: When facing the south/down direction, left is south east and right is south west
-	sf::IntRect collisionBox = { (int)floorf(globalRect.left) + collisionRect.left,
-		(int)floorf(globalRect.top) + collisionRect.top + collisionRect.height - GC::FEET_COLLISION_HEIGHT,
-		collisionRect.width, GC::FEET_COLLISION_HEIGHT }; //Entity's collision rectangle
+	sf::IntRect collisionBox = sf::IntRect(sprite.getGlobalBounds()); //Entity's collision rectangle
+	collisionBox.top = collisionBox.top + collisionBox.height - GC::FEET_COLLISION_HEIGHT;
+	collisionBox.height = GC::FEET_COLLISION_HEIGHT;
+
 	sf::IntRect leftTileRect = { 0, 0, 0, 0 }; //Map collision rectangle, to the left of the direction of movement
 	sf::IntRect rightTileRect = { 0, 0, 0, 0 }; //Map collision rectangle, to the right of the direction of movement
 	sf::IntRect intersection = { 0, 0, 0, 0 }; //Intersection rectangle
@@ -414,49 +410,43 @@ void Entity::CheckMapCollision(const GameData& game)
 //Render the entity if it's on the rendered map area
 void Entity::Render(sf::RenderWindow& window, const GameData& game)
 {
-	//Check if in rendered area
-	nearPlayer = UpdateSpritePosition(game, sprite, globalRect, localRect);
+	anim.UpdateAnimation(sprite, game.elapsed);
 
-	if (nearPlayer || isPlayer)
+	//Flip and move sprite based on facing
+	if ((facing.direction == GC::NORTH) || (facing.direction == GC::EAST))
 	{
-		anim.UpdateAnimation(sprite, game.elapsed);
+		if (!facingRight)
+		{
+			sprite.setScale(1.f, 1.f);
+			//bodyCentre.x = globalRect.width - bodyCentre.x;
+			facingRight = true;
+		}
+	}
+	else
+	{
+		if (facingRight)
+		{
+			sprite.setScale(-1.f, 1.f);
+			facingRight = false;
+		}
+	}
 
-		//Flip and move sprite based on facing
-		if ((facing.direction == GC::NORTH) || (facing.direction == GC::EAST))
+	if (weapon.visible)
+	{
+		if ((facing.direction == GC::WEST) || (facing.direction == GC::NORTH)) //Weapon is behind the player
 		{
-			if (!facingRight)
-			{
-				sprite.setScale(1.f, 1.f);
-				//bodyCentre.x = globalRect.width - bodyCentre.x;
-				facingRight = true;
-			}
-		}
-		else
-		{
-			if (facingRight)
-			{
-				sprite.setScale(-1.f, 1.f);
-				facingRight = false;
-			}
-		}
-
-		if (weapon.visible)
-		{
-			if ((facing.direction == GC::WEST) || (facing.direction == GC::NORTH)) //Weapon is behind the player
-			{
-				window.draw(weapon.sprite);
-				window.draw(sprite);
-			}
-			else //Weapon is infront of the player
-			{
-				window.draw(sprite);
-				window.draw(weapon.sprite);
-			}
-		}
-		else
-		{
+			window.draw(weapon.sprite);
 			window.draw(sprite);
 		}
+		else //Weapon is infront of the player
+		{
+			window.draw(sprite);
+			window.draw(weapon.sprite);
+		}
+	}
+	else
+	{
+		window.draw(sprite);
 	}
 }
 
@@ -501,10 +491,10 @@ void Entity::UpdateWeapon(const GameData& game, std::vector<Projectile>& proj)
 	}
 	else
 	{
-		weapon.UpdateHoldPosition(game, facing, localRect);
+		weapon.UpdateHoldPosition(facing, sprite.getPosition());
 		weapon.UpdateHoldRotation(facing);
 	}
-
+	
 	//Weapon bobbing along to sprite's animation, this needs replacing with a more entity-agnostic method
 	if (weapon.visible)
 	{

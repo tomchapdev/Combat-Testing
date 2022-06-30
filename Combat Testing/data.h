@@ -77,7 +77,6 @@ struct GameData
 	//Window and camera
 	Dim2Di screenResolution = { 0, 0 }; //Resolution of the player's screen
 	float scaling = 0.f; //Sprite scaling, varies based on the screen
-	sf::IntRect mapRect = { 0, 0, 0, 0 }; //Position and area of the map texture being drawn to the screen, in pixels
 	sf::IntRect cameraRect = { 0, 0, 0, 0 }; //Global position and area of the camera, in pixels
 	sf::View camera{}; //View for the window, zoomed in so that the map and sprites can be drawn in pixels
 
@@ -102,7 +101,7 @@ struct GameData
 	void Init(sf::RenderWindow& window);
 
 	//Renders the map onto the camera, based on player position
-	void RenderMap(sf::RenderWindow& window, const float& x, const float& y, const Dim2Df& movement);
+	void RenderMap(sf::RenderWindow& window, const Dim2Df position);
 };
 
 //Global constants
@@ -350,7 +349,3 @@ namespace GC
 		C_COLUMN_TOP, C_COLUMN_BASE, C_CORNER_BOTTOM_LEFT, C_CORNER_BOTTOM_RIGHT
 	}; //Collision map types
 }
-
-//Updates position of a sprite based on global position
-//Returns true if sprite is inside the map area and therefore drawable
-bool UpdateSpritePosition(const GameData& game, sf::Sprite& sprite, const sf::FloatRect& globalRect, sf::FloatRect& localRect);
