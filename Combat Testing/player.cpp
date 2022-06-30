@@ -7,17 +7,12 @@
 void Player::Init(GameData& game)
 {
 	//Positioning
-	entity.bodyCentre.x = (float)GC::PLAYER_BODY_CENTRE.x;
-	entity.bodyCentre.y = (float)GC::PLAYER_BODY_CENTRE.y;
-	entity.localRect = { (float)((game.mapRect.width / 2) - entity.bodyCentre.x),
-							(float)((game.mapRect.height / 2) - entity.bodyCentre.y),
-							(float)GC::PLAYER_DIMENSIONS.x, (float)GC::PLAYER_DIMENSIONS.y };
+	entity.bodyCentre = Dim2Df(GC::PLAYER_BODY_CENTRE); //DUPLICATED INFORMATION, NOT NECESSARY
 
 	//Entity stats
 	entity.isPlayer = true;
 	entity.health = 10;
 	entity.speed = 130.f;
-	entity.globalRect = { 684.f, 684.f, (float)GC::PLAYER_DIMENSIONS.x, (float)GC::PLAYER_DIMENSIONS.y };
 	entity.collisionRect = GC::PLAYER_BODY_RECT;
 	entity.anim.data = &GC::PLAYER_ANIM_IDLE;
 
@@ -25,7 +20,6 @@ void Player::Init(GameData& game)
 	entity.weapon.active = true;
 	entity.weapon.visible = true;
 	entity.weapon.holdDistance = GC::WEAPON_HOVER * GC::TILE_SIZE;
-	entity.weapon.holdOrigin = entity.bodyCentre;
 	entity.weapon.hasTwoAttacks = true;
 	entity.weapon.attack0 = GC::NORMAL_SWING_ATTACK;
 	entity.weapon.attack1 = GC::HEAVY_SWING_ATTACK;
@@ -35,14 +29,14 @@ void Player::Init(GameData& game)
 	entity.texture = &game.textures[GC::PLAYER_TEXTURE];
 	entity.sprite.setTexture(*entity.texture);
 	entity.sprite.setTextureRect({ 0, 0, 16, 22 });
-	entity.weapon.sprite.setOrigin({ (float)GC::PLAYER_BODY_CENTRE.x, (float)GC::PLAYER_BODY_CENTRE.y });
-	entity.sprite.setPosition(entity.localRect.left, entity.localRect.top);
+	entity.sprite.setOrigin(entity.bodyCentre);
+	entity.sprite.setPosition(684.f, 684.f);
 
 	entity.weapon.texture = &game.textures[GC::SPRITESHEET_TEXTURE];
 	entity.weapon.sprite.setTexture(*entity.weapon.texture);
 	entity.weapon.sprite.setTextureRect(GC::SWORD_RECT);
-	entity.weapon.sprite.setOrigin({ 5.f, 18.f });
-	entity.weapon.sprite.setPosition(entity.localRect.left, entity.localRect.top);
+	entity.weapon.sprite.setOrigin(GC::SWORD_ORIGIN);
+	entity.weapon.sprite.setPosition(684.f, 684.f);
 }
 
 //Get inputs and react
@@ -127,6 +121,26 @@ void Player::KeyboardControls(const sf::Event& event, GameData& game)
 	{
 		entity.weapon.attack0 = GC::NORMAL_STRAIGHT_THROW_ATTACK;
 		entity.weapon.attack1 = GC::NORMAL_SPINNING_THROW_ATTACK;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
+	{
+		//entity.weapon.active = true;
+		entity.weapon.visible = true;
+		entity.weapon.entityIsWeapon = false;
+		entity.weapon.holdDistance = GC::WEAPON_HOVER * GC::TILE_SIZE;
+		entity.weapon.hasTwoAttacks = true;
+		entity.weapon.attack0 = GC::NORMAL_SWING_ATTACK;
+		entity.weapon.attack1 = GC::HEAVY_SWING_ATTACK;
+	}
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+	{
+		//entity.weapon.active = true;
+		entity.weapon.visible = false;
+		entity.weapon.entityIsWeapon = true;
+		entity.weapon.holdDistance = 0.f;
+		entity.weapon.hasTwoAttacks = true;
+		entity.weapon.attack0 = GC::HORN_STAB;
+		entity.weapon.attack1 = GC::CHARGE;
 	}
 
 	//Speed testing

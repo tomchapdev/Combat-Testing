@@ -99,21 +99,12 @@ int main()
 
 		// Update the window
 		//Draw map, then enemies, then player
-		gamedata.RenderMap(window, player1.entity.globalRect.left + player1.entity.bodyCentre.x, player1.entity.globalRect.top + player1.entity.bodyCentre.y, player1.entity.movementVector);
+		gamedata.RenderMap(window, player1.entity.sprite.getPosition());
 
 		//Render animated tiles
-		if (startRoom.WithinRenderedArea(gamedata))
-		{
-			startRoom.UpdateAnimatedTiles(gamedata, window);
-		}
-		if (enemyRoom.WithinRenderedArea(gamedata))
-		{
-			enemyRoom.UpdateAnimatedTiles(gamedata, window);
-		}
-		if (itemRoom.WithinRenderedArea(gamedata))
-		{
-			itemRoom.UpdateAnimatedTiles(gamedata, window);
-		}
+		startRoom.UpdateAnimatedTiles(gamedata, window);
+		enemyRoom.UpdateAnimatedTiles(gamedata, window);
+		itemRoom.UpdateAnimatedTiles(gamedata, window);
 
 		UpdateProjectiles(gamedata, window, projectiles);
 

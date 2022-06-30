@@ -265,13 +265,21 @@ void Room::AlterCollisionMap(GameData& game, const int& x, const int& y, const c
 
 	if (tileID > GC::WALL_RANGE.y)
 	{
-		if ((tileID == GC::T_WATER_FOUNTAIN_BASIN) || (tileID == GC::T_LAVA_FOUNTAIN_BASIN)) //Fountain basins
+		if (tileID == GC::T_WALL_COLUMN_BASE) //Column bases
+		{
+			game.collisionMap[tileY][tileX] = GC::C_COLUMN_BASE;
+		}
+		else if ((tileID == GC::T_WATER_FOUNTAIN_BASIN) || (tileID == GC::T_LAVA_FOUNTAIN_BASIN)) //Fountain basins
 		{
 			game.collisionMap[tileY][tileX] = GC::C_FOUNTAIN_BASIN;
 		}
-		else if ((tileID == GC::T_WALL_COLUMN_BASE) || (tileID == GC::T_COLUMN_BASE)) //Column bases
+		else if (tileID == GC::T_WALL_COLUMN_TOP_FLOOR) //Column bases
 		{
-			game.collisionMap[tileY][tileX] = GC::C_COLUMN_BASE;
+			game.collisionMap[tileY][tileX] = GC::C_COLUMN_TOP;
+		}
+		else if (tileID == GC::T_FOUNTAIN_TOP_FLOOR) //Column bases
+		{
+			game.collisionMap[tileY][tileX] = GC::C_FOUNTAIN_TOP;
 		}
 		else if (tileID < GC::WALL_SIDE_RANGE.x) //Floors
 		{
@@ -325,11 +333,9 @@ void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, con
 
 		animTile.sprite.setTexture(game.textures[GC::LAVA_FOUNTAIN_TEXTURE]);
 		animTile.sprite.setTextureRect({ 0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_LAVA_RECT.height });
-
+		animTile.sprite.setPosition((float)((rect.left + x) * GC::TILE_SIZE),
+									(float)(((rect.top + y) * GC::TILE_SIZE) - GC::FOUNTAIN_ANIM_TOP_RECT.height));
 		animTile.anim = { &GC::FOUNTAIN_ANIM_LAVA, 0, 0.f };
-		animTile.globalRect = { (rect.left + x) * GC::TILE_SIZE,
-								((rect.top + y) * GC::TILE_SIZE) - GC::FOUNTAIN_ANIM_TOP_RECT.height,
-								GC::FOUNTAIN_ANIM_LAVA_RECT.width, GC::FOUNTAIN_ANIM_LAVA_RECT.height };
 
 		animatedTiles.push_back(animTile);
 	}
@@ -339,11 +345,9 @@ void Room::CheckForAnimatedTiles(GameData& game, const int& x, const int& y, con
 
 		animTile.sprite.setTexture(game.textures[GC::WATER_FOUNTAIN_TEXTURE]);
 		animTile.sprite.setTextureRect({ 0, 0, GC::TILE_SIZE, GC::FOUNTAIN_ANIM_WATER_RECT.height });
-
+		animTile.sprite.setPosition((float)((rect.left + x) * GC::TILE_SIZE),
+									(float)(((rect.top + y) * GC::TILE_SIZE) - GC::FOUNTAIN_ANIM_TOP_RECT.height));
 		animTile.anim = { &GC::FOUNTAIN_ANIM_WATER, 0, 0.f };
-		animTile.globalRect = { (rect.left + x) * GC::TILE_SIZE,
-								((rect.top + y) * GC::TILE_SIZE) - GC::FOUNTAIN_ANIM_TOP_RECT.height,
-								GC::FOUNTAIN_ANIM_WATER_RECT.width, GC::FOUNTAIN_ANIM_WATER_RECT.height };
 
 		animatedTiles.push_back(animTile);
 	}
@@ -356,8 +360,7 @@ void Room::UpdateAnimatedTiles(const GameData& game, sf::RenderWindow& window)
 
 	for (int x = 0; x != animatedTiles.size(); ++x)
 	{
-		animVisible = UpdateSpritePosition(game, animatedTiles[x].sprite, (sf::FloatRect)animatedTiles[x].globalRect, animatedTiles[x].localRect);
-
+		animVisible = true;
 
 		if (animVisible)
 		{
@@ -365,26 +368,6 @@ void Room::UpdateAnimatedTiles(const GameData& game, sf::RenderWindow& window)
 			window.draw(animatedTiles[x].sprite);
 			animVisible = false;
 		}
-	}
-}
-
-//Checks if the room is within the rendered map area
-bool Room::WithinRenderedArea(const GameData& game)
-{
-	//To ensure the room is at least 3 tiles into the rendered area
-	char offset = 3;
-
-	//Check all 4 corners of the room to see if the room is being rendered
-	if (game.mapRect.contains({ (rect.left + offset) * GC::TILE_SIZE, (rect.top + offset) * GC::TILE_SIZE }) ||
-		game.mapRect.contains({ (rect.left + rect.width - offset) * GC::TILE_SIZE, (rect.top + offset) * GC::TILE_SIZE }) ||
-		game.mapRect.contains({ (rect.left + offset) * GC::TILE_SIZE, (rect.top + rect.height - offset) * GC::TILE_SIZE }) ||
-		game.mapRect.contains({ (rect.left + rect.width - offset) * GC::TILE_SIZE, (rect.top + rect.height - offset) * GC::TILE_SIZE }))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
 	}
 }
 

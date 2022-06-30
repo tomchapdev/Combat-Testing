@@ -13,7 +13,7 @@ void GameData::Init(sf::RenderWindow& window)
 	window.create(sf::VideoMode(screenResolution.x, screenResolution.y), "DD Combat Testing", sf::Style::Fullscreen);
 
 	//Vectors
-	textures.resize(GC::MAX_TEXTURES);
+	textures.resize(GC::NUM_TEXTURES);
 	collisionMap.resize(GC::MAP_SIZE_TILES);
 	for (unsigned char index = 0; index < GC::MAP_SIZE_TILES; ++index)
 	{
@@ -25,10 +25,6 @@ void GameData::Init(sf::RenderWindow& window)
 	textures[GC::SPRITESHEET_TEXTURE].loadFromFile("spritesheet.png");
 	spritesheetImg.create(512, 512);
 	spritesheetImg.loadFromFile("spritesheet.png");
-
-	//Map
-	mapRect.width = GC::MAP_DRAW_SIZE.x;
-	mapRect.height = GC::MAP_DRAW_SIZE.y;
 
 	//Map & Camera Textures
 	textures[GC::MAP_FLOOR_TEXTURE].create(GC::MAP_SIZE_PIXELS, GC::MAP_SIZE_PIXELS);
@@ -72,103 +68,17 @@ void GameData::Init(sf::RenderWindow& window)
 	cameraRect.height = (int)(screenResolution.y / scaling);
 
 	camera.setSize((float)cameraRect.width, (float)cameraRect.height);
-	camera.setCenter((float)(GC::MAP_DRAW_SIZE.x / 2), (float)(GC::MAP_DRAW_SIZE.y / 2));
+	camera.setCenter(684.f, 684.f);
 	window.setView(camera);
 
 	//Sprites
-	mapSprite.setTexture(textures[GC::MAP_FLOOR_TEXTURE]);
+	mapSprite.setTexture(textures[GC::MAP_FLOOR_TEXTURE], true);
 }
 
 //Renders the map onto the camera, based on player position
-void GameData::RenderMap(sf::RenderWindow& window, const float& x, const float& y, const Dim2Df& movement)
+void GameData::RenderMap(sf::RenderWindow& window, const Dim2Df position)
 {
-	short halfWidth = GC::MAP_DRAW_SIZE.x / 2, halfHeight = GC::MAP_DRAW_SIZE.y / 2, xPixel = (int)roundf(x), yPixel = (int)roundf(y);
-	bool moveCameraLeft = false, moveCameraRight = false, moveCameraUp = false, moveCameraDown = false;
-
-	//Map
-	//X axis
-	if (xPixel <= halfWidth)
-	{
-		mapRect.left = 0;
-		moveCameraRight = true;
-	}
-	else if ((xPixel + halfWidth) >= GC::MAP_SIZE_PIXELS)
-	{
-		mapRect.left = GC::MAP_SIZE_PIXELS - GC::MAP_DRAW_SIZE.x;
-		moveCameraLeft = true;
-	}
-	else
-	{
-		mapRect.left = xPixel - halfWidth;
-	}
-
-	//Y axis
-	if (yPixel <= halfHeight)
-	{
-		mapRect.top = 0;
-		moveCameraDown = true;
-	}
-	else if ((yPixel + halfHeight) >= GC::MAP_SIZE_PIXELS)
-	{
-		mapRect.top = GC::MAP_SIZE_PIXELS - GC::MAP_DRAW_SIZE.y;
-		moveCameraUp = true;
-	}
-	else
-	{
-		mapRect.top = yPixel - halfHeight;
-	}
-
-	//Map sprite
-	mapSprite.setTextureRect(mapRect);
 	window.draw(mapSprite);
-
-	//Camera
-	halfWidth = cameraRect.width / 2, halfHeight = cameraRect.height / 2;
-	Dim2Df centre{ x - mapRect.left, y - mapRect.top };
-
-	if (moveCameraLeft || moveCameraRight || moveCameraUp || moveCameraDown)
-	{
-		//Move camera to
-		if (moveCameraLeft)
-		{
-			centre.x = (float)(GC::MAP_DRAW_SIZE.x - halfWidth);
-		}
-		else if (moveCameraRight)
-		{
-			centre.x = (float)halfWidth;
-		}
-
-		if (moveCameraUp)
-		{
-			centre.y = (float)(GC::MAP_DRAW_SIZE.y - halfHeight);
-		}
-		else if (moveCameraDown)
-		{
-			centre.y = (float)halfHeight;
-		}
-	}
-
-	camera.setCenter(centre);
-}
-
-//Checks if renderable and updates position of the sprite based on global position
-//Returns true if sprite is inside the map area and therefore drawable
-bool UpdateSpritePosition(const GameData& game, sf::Sprite& sprite, const sf::FloatRect& globalRect, sf::FloatRect& localRect)
-{
-	bool nearPlayer = false;
-
-	//Check if entity is wholly inside the drawn map area
-	if ((globalRect.left > game.mapRect.left) && ((globalRect.left + globalRect.width) < (game.mapRect.left + game.mapRect.width))
-		&& (globalRect.top > game.mapRect.top) && ((globalRect.top + globalRect.height) < (game.mapRect.top + game.mapRect.height)))
-	{
-		nearPlayer = true;
-
-		//Set position on rendered map
-		localRect = globalRect;
-		localRect.left = roundf(localRect.left - game.mapRect.left);
-		localRect.top = roundf(localRect.top - game.mapRect.top);
-		sprite.setPosition(localRect.left, localRect.top);
-	}
-
-	return nearPlayer;
+	camera.setCenter(position);
+	window.setView(camera);
 }

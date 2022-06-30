@@ -31,6 +31,7 @@ struct Entity
 	bool isPlayer = false; //Player or Enemy
 	bool isAlive = true; //Alive or dead
 	bool canAttack = true; //Ability to attack
+	bool invulnerable = false; //Can be damaged or not
 	bool moving = false; //Moving or still
 	bool facingRight = true; //Facing right or left
 	bool nearPlayer = false; //In the rendered map area or not
@@ -45,8 +46,6 @@ struct Entity
 	Dim2Df bodyCentre = { 0, 0 }; //Player sprite's body centre
 	Dim2Df movementVector = { 0.f, 0.f }; //Current movement values
 	Dim2Di frameMovementVector = { 0, 0 }; //Current movement this frame
-	sf::FloatRect globalRect = { 0.f, 0.f, 0.f, 0.f }; //Current position on the map
-	sf::FloatRect localRect = { 0.f, 0.f, 0.f, 0.f }; //Current position on the rendered map
 	sf::IntRect collisionRect = { 0, 0, 0, 0 }; //Collision rect of the sprite
 
 	//Structs

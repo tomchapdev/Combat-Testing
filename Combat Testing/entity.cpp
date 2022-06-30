@@ -11,11 +11,25 @@ void Entity::InitAttack(const GameData& game, const char& attack)
 
 	if (attack == GC::FIRST_ATTACK)
 	{
-		weapon.attack0.Init(game, weapon.sprite, globalRect, facing, attackSpeed, weapon.holdDistance, weapon.holdOrigin);
+		if (weapon.entityIsWeapon)
+		{
+			weapon.attack0.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true);
+		}
+		else
+		{
+			weapon.attack0.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false);
+		}
 	}
 	else if (weapon.hasTwoAttacks && attack == GC::SECOND_ATTACK)
 	{
-		weapon.attack1.Init(game, weapon.sprite, globalRect, facing, attackSpeed, weapon.holdDistance, weapon.holdOrigin);
+		if (weapon.entityIsWeapon)
+		{
+			weapon.attack1.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true);
+		}
+		else
+		{
+			weapon.attack1.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false);
+		}
 	}
 }
 
@@ -28,12 +42,8 @@ void Entity::InitKnockback()
 //Updates movement vector based on target coords
 void Entity::UpdateMovementVector(const Dim2Df& target)
 {
-	//Find origin
-	Dim2Df origin = { globalRect.left + bodyCentre.x,
-						globalRect.top + bodyCentre.y };
-
 	//Get vector between points, then calculate directional angle using vector
-	facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(origin, target));
+	facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(sprite.getPosition(), target));
 
 	movementVector = CalculateVectorOfMagnitude(facing, speed);
 }
@@ -46,8 +56,7 @@ void Entity::Move(const GameData& game)
 
 	CheckMapCollision(game);
 
-	globalRect.left += frameMovementVector.x;
-	globalRect.top += frameMovementVector.y;
+	sprite.move(Dim2Df(frameMovementVector));
 }
 
 //Checks if movement is valid, using rectangle intersections
@@ -64,6 +73,7 @@ void Entity::CheckMapCollision(const GameData& game)
 	{
 		movingRight = true;
 	}
+
 	if (frameMovementVector.y < 0)
 	{
 		movingUp = true;
@@ -73,81 +83,83 @@ void Entity::CheckMapCollision(const GameData& game)
 		movingDown = true;
 	}
 
-	//Get collision rectangles, left and right rects based on the direction the entity is moving
-	sf::IntRect collisionBox = { (int)floorf(globalRect.left) + collisionRect.left,
-		(int)floorf(globalRect.top) + collisionRect.top + collisionRect.height - GC::FEET_COLLISION_HEIGHT,
-		collisionRect.width, GC::FEET_COLLISION_HEIGHT };
-	sf::IntRect leftTileRect = { 0, 0, 0, 0 };
-	sf::IntRect rightTileRect = { 0, 0, 0, 0 };
-	sf::IntRect intersection = { 0, 0, 0, 0 };
-	Dim2Di leftPoint = { 0, 0 };
-	Dim2Di rightPoint = { 0, 0 };
-	unsigned char leftTile = 0;
-	unsigned char rightTile = 0;
-	bool collided = false;
+	//Initialize collision rectangles, left and right rects based on the direction the entity is moving
+	//example: When facing the south/down direction, left is south east and right is south west
+	sf::IntRect collisionBox = sf::IntRect(sprite.getGlobalBounds()); //Entity's collision rectangle
+	collisionBox.top = collisionBox.top + collisionBox.height - GC::FEET_COLLISION_HEIGHT;
+	collisionBox.height = GC::FEET_COLLISION_HEIGHT;
 
-	//C_FREE_MOVEMENT, C_WALL, C_WALL_TOP, C_WALL_SIDE_LEFT, C_WALL_SIDE_RIGHT, C_WALL_TOP_BOTTOM_LEFT, C_WALL_TOP_BOTTOM_RIGHT, C_FOUNTAIN_BASIN,
-	//C_COLUMN_TOP, C_COLUMN_BASE, C_CORNER_BOTTOM_LEFT, C_CORNER_BOTTOM_RIGHT
-	// 
-	//Up - !Wall!, !fountain basin!, !column base!, !wall sides!
-	//Down - !Wall!, !wall tops!, !wall corners (same as wall tops)!, !column top!
-	//Left - !Wall!, !wall tops!, !wall sides!, !wall corners (same as wall sides)!, !fountain basin!, column base
-	//Right - !Wall!, wall tops, wall sides, wall corners (same as wall sides), fountain basin, column base
+	sf::IntRect leftTileRect = { 0, 0, 0, 0 }; //Map collision rectangle, to the left of the direction of movement
+	sf::IntRect rightTileRect = { 0, 0, 0, 0 }; //Map collision rectangle, to the right of the direction of movement
+	sf::IntRect intersection = { 0, 0, 0, 0 }; //Intersection rectangle
+	Dim2Di leftPoint = { 0, 0 }; //Left point coordinates
+	Dim2Di rightPoint = { 0, 0 }; //Right point coordinates
+	unsigned char leftTile = 0; //Left tile ID
+	unsigned char rightTile = 0; //Right tile ID
+	bool collided = false; //If the entity has collided with the map
 
+	//Find collision rectangles and offset them slightly for smooth wall sliding
+	//Increase collision box in exact direction and decrease in perpendicular direction
 	if (movingUp)
 	{
-		leftPoint = { collisionBox.left / GC::TILE_SIZE, (collisionBox.top + frameMovementVector.y) / GC::TILE_SIZE }; //Top left
+		leftPoint = { (collisionBox.left + GC::C_OFFSET) / GC::TILE_SIZE, (collisionBox.top + frameMovementVector.y) / GC::TILE_SIZE }; //Top left
 		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
 
-		if (leftTile == GC::C_WALL)
+		if (leftTile != GC::C_FREE_MOVEMENT)
 		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE + 1 };
-		}
-		else if (leftTile == GC::C_WALL_SIDE_LEFT)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
-		}
-		else if (leftTile == GC::C_FOUNTAIN_BASIN)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT };
-		}
-		else if (leftTile == GC::C_COLUMN_BASE)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT };
-		}
+			if (leftTile == GC::C_WALL)
+			{
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE - GC::C_OFFSET, GC::TILE_SIZE + GC::C_OFFSET };
+			}
+			else if (leftTile == GC::C_WALL_SIDE_LEFT)
+			{
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH - GC::C_OFFSET, GC::TILE_SIZE };
+			}
+			else if (leftTile == GC::C_FOUNTAIN_BASIN)
+			{
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE - GC::C_OFFSET, GC::FOUNTAIN_BASIN_HEIGHT + GC::C_OFFSET };
+			}
+			else if (leftTile == GC::C_COLUMN_BASE)
+			{
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE - GC::C_OFFSET, GC::COLUMN_BASE_HEIGHT + GC::C_OFFSET };
+			}
 
 
-		if (collisionBox.intersects(leftTileRect, intersection))
-		{
-			collided = true;
-			frameMovementVector.y = 0;
+			if (collisionBox.intersects(leftTileRect, intersection))
+			{
+				collided = true;
+				frameMovementVector.y = 0;
+			}
 		}
 
 		if (!collided)
 		{
-			rightPoint = { (collisionBox.left + collisionBox.width) / GC::TILE_SIZE, (collisionBox.top + frameMovementVector.y) / GC::TILE_SIZE }; //Top right
+			rightPoint = { (collisionBox.left + collisionBox.width - GC::C_OFFSET) / GC::TILE_SIZE, (collisionBox.top + frameMovementVector.y) / GC::TILE_SIZE }; //Top right
 			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
 
-			if (rightTile == GC::C_WALL)
+			if (rightTile != GC::C_FREE_MOVEMENT)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE + 1 };
-			}
-			else if (rightTile == GC::C_WALL_SIDE_RIGHT)
-			{
-				rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE + 1 };
-			}
-			else if (rightTile == GC::C_FOUNTAIN_BASIN)
-			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT };
-			}
-			else if (rightTile == GC::C_COLUMN_BASE)
-			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT };
-			}
+				if (rightTile == GC::C_WALL)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::C_OFFSET, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE - GC::C_OFFSET, GC::TILE_SIZE + GC::C_OFFSET };
+				}
+				else if (rightTile == GC::C_WALL_SIDE_RIGHT)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH - GC::C_OFFSET), rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH - GC::C_OFFSET, GC::TILE_SIZE };
+				}
+				else if (rightTile == GC::C_FOUNTAIN_BASIN)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::C_OFFSET, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE - GC::C_OFFSET, GC::FOUNTAIN_BASIN_HEIGHT + GC::C_OFFSET };
+				}
+				else if (rightTile == GC::C_COLUMN_BASE)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::C_OFFSET, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE - GC::C_OFFSET, GC::COLUMN_BASE_HEIGHT + GC::C_OFFSET };
+				}
 
-			if (collisionBox.intersects(rightTileRect, intersection))
-			{
-				frameMovementVector.y = 0;
+				if (collisionBox.intersects(rightTileRect, intersection))
+				{
+					frameMovementVector.y = 0;
+				}
 			}
 		}
 
@@ -155,60 +167,76 @@ void Entity::CheckMapCollision(const GameData& game)
 	}
 	else if (movingDown)
 	{
-		leftPoint = { collisionBox.left / GC::TILE_SIZE, (collisionBox.top + collisionBox.height + frameMovementVector.y) / GC::TILE_SIZE }; //Bottom right
+		leftPoint = { (collisionBox.left + collisionBox.width - GC::C_OFFSET) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height + frameMovementVector.y) / GC::TILE_SIZE }; //Bottom right
 		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
 
-		if (leftTile == GC::C_WALL)
+		if (leftTile != GC::C_FREE_MOVEMENT)
 		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) - 1, GC::TILE_SIZE, GC::TILE_SIZE };
-		}
-		else if ((leftTile == GC::C_WALL_TOP) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT))
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
-		}
-		else if (leftTile == GC::C_WALL_TOP_BOTTOM_RIGHT)
-		{
-			leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
-				(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
-		}
-		else if (leftTile == GC::C_COLUMN_TOP)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
-		}
+			if (leftTile == GC::C_WALL)
+			{
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::C_OFFSET, (leftPoint.y * GC::TILE_SIZE) - GC::C_OFFSET, GC::TILE_SIZE - GC::C_OFFSET, GC::TILE_SIZE + GC::C_OFFSET };
+			}
+			else if ((leftTile == GC::C_WALL_TOP) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT) || (leftTile == GC::C_CORNER_BOTTOM_LEFT))
+			{
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::C_OFFSET, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + GC::C_OFFSET), GC::TILE_SIZE - GC::C_OFFSET, GC::WALL_TOP_HEIGHT + GC::C_OFFSET };
+			}
+			else if (leftTile == GC::C_WALL_TOP_BOTTOM_RIGHT)
+			{
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH - GC::C_OFFSET), (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + GC::C_OFFSET),
+					GC::WALL_SIDE_WIDTH - GC::C_OFFSET, GC::WALL_TOP_HEIGHT + GC::C_OFFSET };
+			}
+			else if (leftTile == GC::C_FOUNTAIN_TOP)
+			{
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::C_OFFSET, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::FOUNTAIN_TOP_HEIGHT + GC::C_OFFSET), GC::TILE_SIZE - GC::C_OFFSET, GC::FOUNTAIN_TOP_HEIGHT + GC::C_OFFSET };
+			}
+			else if (leftTile == GC::C_COLUMN_TOP)
+			{
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::C_OFFSET, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + GC::C_OFFSET), GC::TILE_SIZE - GC::C_OFFSET, GC::COLUMN_TOP_HEIGHT + GC::C_OFFSET };
+			}
 
-		if (collisionBox.intersects(leftTileRect, intersection))
-		{
-			collided = true;
-			frameMovementVector.y = 0;
+			if (collisionBox.intersects(leftTileRect, intersection))
+			{
+				collided = true;
+				frameMovementVector.y = 0;
+			}
 		}
 		
 
 		if (!collided)
 		{
-			rightPoint = { (collisionBox.left + collisionBox.width) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height + frameMovementVector.y) / GC::TILE_SIZE }; //Bottom left
+			rightPoint = { (collisionBox.left + GC::C_OFFSET) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height + frameMovementVector.y) / GC::TILE_SIZE }; //Bottom left
 			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
 
-			if (rightTile == GC::C_WALL)
+			if (rightTile != GC::C_FREE_MOVEMENT)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) - 1, GC::TILE_SIZE, GC::TILE_SIZE };
-			}
-			else if ((rightTile == GC::C_WALL_TOP) || (rightTile == GC::C_CORNER_BOTTOM_LEFT))
-			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
-			}
-			else if (rightTile == GC::C_WALL_TOP_BOTTOM_LEFT)
-			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
-					(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
-			}
-			else if (rightTile == GC::C_COLUMN_TOP)
-			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
-			}
+				if (rightTile == GC::C_WALL)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) - GC::C_OFFSET, GC::TILE_SIZE - GC::C_OFFSET, GC::TILE_SIZE + GC::C_OFFSET };
+				}
+				else if ((rightTile == GC::C_WALL_TOP) || (rightTile == GC::C_CORNER_BOTTOM_LEFT) || (rightTile == GC::C_CORNER_BOTTOM_RIGHT))
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + GC::C_OFFSET), GC::TILE_SIZE - GC::C_OFFSET, GC::WALL_TOP_HEIGHT + GC::C_OFFSET };
+				}
+				else if (rightTile == GC::C_WALL_TOP_BOTTOM_LEFT)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + GC::C_OFFSET),
+						GC::WALL_SIDE_WIDTH - GC::C_OFFSET, (GC::WALL_TOP_HEIGHT + GC::C_OFFSET) };
+				}
+				else if (rightTile == GC::C_FOUNTAIN_TOP)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::FOUNTAIN_TOP_HEIGHT + GC::C_OFFSET), GC::TILE_SIZE - GC::C_OFFSET, (GC::FOUNTAIN_TOP_HEIGHT + GC::C_OFFSET) };
+				}
+				else if (rightTile == GC::C_COLUMN_TOP)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + GC::C_OFFSET), GC::TILE_SIZE - GC::C_OFFSET, (GC::COLUMN_TOP_HEIGHT + GC::C_OFFSET) };
+				}
 
-			if (collisionBox.intersects(rightTileRect, intersection))
-			{
-				frameMovementVector.y = 0;
+				if (collisionBox.intersects(rightTileRect, intersection))
+				{
+					frameMovementVector.y = 0;
+				}
+
+				collided = false;
 			}
 		}
 
@@ -221,213 +249,204 @@ void Entity::CheckMapCollision(const GameData& game)
 
 	if (movingLeft)
 	{
-		leftPoint = { (collisionBox.left + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height - 1) / GC::TILE_SIZE }; //Bottom left
+		leftPoint = { (collisionBox.left + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height - GC::C_OFFSET) / GC::TILE_SIZE }; //Bottom left
 		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
 
-		if (leftTile == GC::C_WALL)
+		if (leftTile != GC::C_FREE_MOVEMENT)
 		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE };
-		}
-		else if ((leftTile == GC::C_WALL_TOP) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT))
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
-		}
-		else if (leftTile == GC::C_WALL_SIDE_LEFT)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
-		}
-		else if (leftTile == GC::C_WALL_SIDE_RIGHT)
-		{
-			leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
-		}
-		else if (leftTile == GC::C_WALL_TOP_BOTTOM_LEFT)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
-				(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
-		}
-		else if (leftTile == GC::C_COLUMN_TOP)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
-		}
-
-		//More to go here soon
-
-		if (collisionBox.intersects(leftTileRect, intersection))
-		{
-			collided = true;
-			frameMovementVector.x = 0;
-		}
-
-		if (!collided)
-		{
-			rightPoint = { (collisionBox.left + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + 1) / GC::TILE_SIZE }; //Top left
-			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
-
-			if (rightTile == GC::C_WALL)
+			if (leftTile == GC::C_WALL)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE - 1 };
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE + GC::C_OFFSET, GC::TILE_SIZE };
 			}
-			else if (rightTile == GC::C_WALL_SIDE_LEFT)
+			else if (leftTile == GC::C_WALL_TOP)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT - GC::C_OFFSET), GC::TILE_SIZE, GC::WALL_TOP_HEIGHT - GC::C_OFFSET };
 			}
-			else if (rightTile == GC::C_WALL_SIDE_RIGHT)
+			else if ((leftTile == GC::C_WALL_SIDE_LEFT) || (leftTile == GC::C_CORNER_BOTTOM_LEFT))
 			{
-				rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET, GC::TILE_SIZE };
 			}
-			else if (rightTile == GC::C_FOUNTAIN_BASIN)
+			else if ((leftTile == GC::C_WALL_SIDE_RIGHT) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT))
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT - 1 };
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + GC::C_OFFSET), leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET + GC::C_OFFSET, GC::TILE_SIZE };
 			}
-			else if (rightTile == GC::C_COLUMN_BASE)
+			else if (leftTile == GC::C_WALL_TOP_BOTTOM_LEFT)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT + 1 };
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - GC::WALL_TOP_HEIGHT,
+					(GC::WALL_SIDE_WIDTH + GC::C_OFFSET), GC::WALL_TOP_HEIGHT };
+			}
+			else if (leftTile == GC::C_FOUNTAIN_TOP)
+			{
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - GC::FOUNTAIN_TOP_HEIGHT, GC::TILE_SIZE + GC::C_OFFSET, GC::FOUNTAIN_TOP_HEIGHT };
+			}
+			else if (leftTile == GC::C_COLUMN_TOP)
+			{
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, (leftPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - GC::COLUMN_TOP_HEIGHT, GC::TILE_SIZE + GC::C_OFFSET, GC::COLUMN_TOP_HEIGHT };
 			}
 
-			if (collisionBox.intersects(rightTileRect, intersection))
+			if (collisionBox.intersects(leftTileRect, intersection))
 			{
+				collided = true;
 				frameMovementVector.x = 0;
 			}
 		}
 
-		collided = false;
+		if (!collided)
+		{
+			rightPoint = { (collisionBox.left + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + GC::C_OFFSET) / GC::TILE_SIZE }; //Top left
+			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
+
+			if (rightTile != GC::C_FREE_MOVEMENT)
+			{
+				if (rightTile == GC::C_WALL)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE + GC::C_OFFSET, GC::TILE_SIZE - GC::C_OFFSET };
+				}
+				else if (rightTile == GC::C_WALL_SIDE_LEFT)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET, GC::TILE_SIZE };
+				}
+				else if (rightTile == GC::C_WALL_SIDE_RIGHT)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + GC::C_OFFSET), rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET + GC::C_OFFSET, GC::TILE_SIZE };
+				}
+				else if (rightTile == GC::C_FOUNTAIN_BASIN)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE + GC::C_OFFSET, GC::FOUNTAIN_BASIN_HEIGHT - GC::C_OFFSET };
+				}
+				else if (rightTile == GC::C_COLUMN_BASE)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE + GC::C_OFFSET, GC::COLUMN_BASE_HEIGHT - GC::C_OFFSET };
+				}
+
+				if (collisionBox.intersects(rightTileRect, intersection))
+				{
+					frameMovementVector.x = 0;
+				}
+			}
+		}
 	}
 	else if (movingRight)
 	{
-		leftPoint = { (collisionBox.left + collisionBox.width + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + 1) / GC::TILE_SIZE }; //Top right
+		leftPoint = { (collisionBox.left + collisionBox.width + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + GC::C_OFFSET) / GC::TILE_SIZE }; //Top right
 		leftTile = game.collisionMap[leftPoint.y][leftPoint.x];
 
-		if (leftTile == GC::C_WALL)
+		if (leftTile != GC::C_FREE_MOVEMENT)
 		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE - 1 };
-		}
-		else if (leftTile == GC::C_WALL_SIDE_LEFT)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
-		}
-		else if (leftTile == GC::C_WALL_SIDE_RIGHT)
-		{
-			leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
-		}
-		else if (leftTile == GC::C_FOUNTAIN_BASIN)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::FOUNTAIN_BASIN_HEIGHT - 1 };
-		}
-		else if (leftTile == GC::C_COLUMN_BASE)
-		{
-			leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT + 1 };
-		}
-		//More to go here soon
-
-		if (collisionBox.intersects(leftTileRect, intersection))
-		{
-			collided = true;
-			frameMovementVector.x = 0;
-		}
-
-		if (!collided)
-		{
-			rightPoint = { (collisionBox.left + collisionBox.width + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height - 1) / GC::TILE_SIZE }; //Bottom right
-			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
-
-			if (rightTile == GC::C_WALL)
+			if (leftTile == GC::C_WALL)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::TILE_SIZE };
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) - GC::C_OFFSET, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE + GC::C_OFFSET, GC::TILE_SIZE };
 			}
-			else if ((rightTile == GC::C_WALL_TOP) || (leftTile == GC::C_CORNER_BOTTOM_RIGHT))
+			else if (leftTile == GC::C_WALL_SIDE_LEFT)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::WALL_TOP_HEIGHT + 1) };
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) - GC::C_OFFSET, leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET + GC::C_OFFSET, GC::TILE_SIZE };
 			}
-			else if (rightTile == GC::C_WALL_SIDE_LEFT)
+			else if (leftTile == GC::C_WALL_SIDE_RIGHT)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + GC::C_OFFSET), leftPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET, GC::TILE_SIZE };
 			}
-			else if (rightTile == GC::C_WALL_SIDE_RIGHT)
+			else if (leftTile == GC::C_FOUNTAIN_BASIN)
 			{
-				rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + 1), rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + 1, GC::TILE_SIZE };
+				leftTileRect = { (leftPoint.x * GC::TILE_SIZE) - GC::C_OFFSET, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE + GC::C_OFFSET, GC::FOUNTAIN_BASIN_HEIGHT - GC::C_OFFSET };
 			}
-			else if (rightTile == GC::C_WALL_TOP_BOTTOM_LEFT)
+			else if (leftTile == GC::C_COLUMN_BASE)
 			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT + 1),
-					(GC::WALL_SIDE_WIDTH + 1), (GC::WALL_TOP_HEIGHT + 1) };
-			}
-			else if (rightTile == GC::C_COLUMN_TOP)
-			{
-				rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::COLUMN_TOP_HEIGHT + 1), GC::TILE_SIZE, (GC::COLUMN_TOP_HEIGHT + 1) };
+				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE, GC::COLUMN_BASE_HEIGHT - GC::C_OFFSET };
 			}
 
-			if (collisionBox.intersects(rightTileRect, intersection))
+			if (collisionBox.intersects(leftTileRect, intersection))
 			{
+				collided = true;
 				frameMovementVector.x = 0;
 			}
 		}
 
-		collided = false;
+		if (!collided)
+		{
+			rightPoint = { (collisionBox.left + collisionBox.width + frameMovementVector.x) / GC::TILE_SIZE, (collisionBox.top + collisionBox.height - GC::C_OFFSET) / GC::TILE_SIZE }; //Bottom right
+			rightTile = game.collisionMap[rightPoint.y][rightPoint.x];
+
+			if (rightTile != GC::C_FREE_MOVEMENT)
+			{
+				if (rightTile == GC::C_WALL)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) - GC::C_OFFSET, rightPoint.y * GC::TILE_SIZE, GC::TILE_SIZE + GC::C_OFFSET, GC::TILE_SIZE };
+				}
+				else if (rightTile == GC::C_WALL_TOP)
+				{
+					rightTileRect = { rightPoint.x * GC::TILE_SIZE, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_TOP_HEIGHT - GC::C_OFFSET), GC::TILE_SIZE, GC::WALL_TOP_HEIGHT - GC::C_OFFSET };
+				}
+				else if ((rightTile == GC::C_WALL_SIDE_LEFT) || (rightTile == GC::C_CORNER_BOTTOM_LEFT))
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) - GC::C_OFFSET, rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET + GC::C_OFFSET, GC::TILE_SIZE };
+				}
+				else if ((rightTile == GC::C_WALL_SIDE_RIGHT) || (rightTile == GC::C_CORNER_BOTTOM_RIGHT))
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + GC::C_OFFSET), rightPoint.y * GC::TILE_SIZE, GC::WALL_SIDE_WIDTH + GC::C_OFFSET, GC::TILE_SIZE };
+				}
+				else if (rightTile == GC::C_WALL_TOP_BOTTOM_RIGHT)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) + GC::TILE_SIZE - (GC::WALL_SIDE_WIDTH + GC::C_OFFSET), (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - GC::WALL_TOP_HEIGHT,
+						(GC::WALL_SIDE_WIDTH + GC::C_OFFSET), GC::WALL_TOP_HEIGHT };
+				}
+				else if (rightTile == GC::C_FOUNTAIN_TOP)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) - GC::C_OFFSET, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - GC::FOUNTAIN_TOP_HEIGHT, GC::TILE_SIZE + GC::C_OFFSET, GC::FOUNTAIN_TOP_HEIGHT };
+				}
+				else if (rightTile == GC::C_COLUMN_TOP)
+				{
+					rightTileRect = { (rightPoint.x * GC::TILE_SIZE) - GC::C_OFFSET, (rightPoint.y * GC::TILE_SIZE) + GC::TILE_SIZE - GC::COLUMN_TOP_HEIGHT, GC::TILE_SIZE + GC::C_OFFSET, GC::COLUMN_TOP_HEIGHT };
+				}
+
+				if (collisionBox.intersects(rightTileRect, intersection))
+				{
+					frameMovementVector.x = 0;
+				}
+			}
+		}
 	}
 }
 
 //Render the entity if it's on the rendered map area
 void Entity::Render(sf::RenderWindow& window, const GameData& game)
 {
-	//Check if in rendered area
-	nearPlayer = UpdateSpritePosition(game, sprite, globalRect, localRect);
+	anim.UpdateAnimation(sprite, game.elapsed);
 
-	/*if (nearPlayer && weapon.visible && !weapon.attacking)
+	//Flip and move sprite based on facing
+	if ((facing.direction == GC::NORTH) || (facing.direction == GC::EAST))
 	{
-		UpdateSpritePosition(game, weapon.sprite, weapon.globalRect, weapon.localRect);
-	}*/
-
-	if (nearPlayer || isPlayer)
-	{
-		anim.UpdateAnimation(sprite, game.elapsed);
-
-		//Flip and move sprite based on facing
-		if ((facing.direction == GC::NORTH) || (facing.direction == GC::EAST))
-		{
-			if (!facingRight)
-			{
-				sprite.setScale(1.f, 1.f);
-				bodyCentre.x = globalRect.width - bodyCentre.x;
-				facingRight = true;
-			}
-		}
-		else
-		{
-			if (facingRight)
-			{
-				sprite.setScale(-1.f, 1.f);
-				bodyCentre.x = globalRect.width - bodyCentre.x;
-				facingRight = false;
-			}
-
-			//Adjust for drawing, this is because scale -1 flips the sprite but also alters where it draws the sprite
-			sprite.move(globalRect.width, 0.f);
-		}
-
-		if (weapon.visible)
-		{
-			if ((facing.direction == GC::WEST) || (facing.direction == GC::NORTH))
-			{
-				window.draw(weapon.sprite);
-				window.draw(sprite);
-			}
-			else
-			{
-				window.draw(sprite);
-				window.draw(weapon.sprite);
-			}
-		}
-		else
-		{
-			window.draw(sprite);
-		}
-
 		if (!facingRight)
 		{
-			//Re-adjust for correct collision etc
-			sprite.move(-globalRect.width, 0.f);
+			sprite.setScale(1.f, 1.f);
+			//bodyCentre.x = globalRect.width - bodyCentre.x;
+			facingRight = true;
 		}
+	}
+	else
+	{
+		if (facingRight)
+		{
+			sprite.setScale(-1.f, 1.f);
+			facingRight = false;
+		}
+	}
 
+	if (weapon.visible)
+	{
+		if ((facing.direction == GC::WEST) || (facing.direction == GC::NORTH)) //Weapon is behind the player
+		{
+			window.draw(weapon.sprite);
+			window.draw(sprite);
+		}
+		else //Weapon is infront of the player
+		{
+			window.draw(sprite);
+			window.draw(weapon.sprite);
+		}
+	}
+	else
+	{
+		window.draw(sprite);
 	}
 }
 
@@ -446,6 +465,11 @@ void Entity::UpdateAttacks(const GameData& game, std::vector<Projectile>& proj)
 	{
 		weapon.attacking = false;
 		canAttack = true;
+
+		if (weapon.entityIsWeapon)
+		{
+			sprite.setRotation(GC::ZERO);
+		}
 	}
 }
 
@@ -467,10 +491,10 @@ void Entity::UpdateWeapon(const GameData& game, std::vector<Projectile>& proj)
 	}
 	else
 	{
-		weapon.UpdateHoldPosition(game, facing, localRect);
+		weapon.UpdateHoldPosition(facing, sprite.getPosition());
 		weapon.UpdateHoldRotation(facing);
 	}
-
+	
 	//Weapon bobbing along to sprite's animation, this needs replacing with a more entity-agnostic method
 	if (weapon.visible)
 	{

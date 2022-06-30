@@ -77,7 +77,6 @@ struct GameData
 	//Window and camera
 	Dim2Di screenResolution = { 0, 0 }; //Resolution of the player's screen
 	float scaling = 0.f; //Sprite scaling, varies based on the screen
-	sf::IntRect mapRect = { 0, 0, 0, 0 }; //Position and area of the map texture being drawn to the screen, in pixels
 	sf::IntRect cameraRect = { 0, 0, 0, 0 }; //Global position and area of the camera, in pixels
 	sf::View camera{}; //View for the window, zoomed in so that the map and sprites can be drawn in pixels
 
@@ -102,7 +101,7 @@ struct GameData
 	void Init(sf::RenderWindow& window);
 
 	//Renders the map onto the camera, based on player position
-	void RenderMap(sf::RenderWindow& window, const float& x, const float& y, const Dim2Df& movement);
+	void RenderMap(sf::RenderWindow& window, const Dim2Df position);
 };
 
 //Global constants
@@ -110,8 +109,8 @@ namespace GC
 {
 	//Screen
 	const float SCALE_1080 = 5.f; //View zoom at 1080p
-	const float SCALE_1440 = 3.2f; //View zoom at 1440p
-	const float SCALE_2160 = 5.f; //View zoom at 2160p
+	const float SCALE_1440 = 6.4f; //View zoom at 1440p
+	const float SCALE_2160 = 10.f; //View zoom at 2160p
 	/*Area of the map that is drawn, centred on the player
 	This gives plenty of extra room to allow partially on-screen elements
 	to be easily found and drawn onto the screen with minimal excess.*/
@@ -121,29 +120,27 @@ namespace GC
 
 
 	//Textures
-	const char MAX_TEXTURES = 10; //Maximum number of textures required to run the game
+	const char NUM_TEXTURES = 10; //Number of textures used in the game
 
-	//Tile
+	//Tile: General
 	const char TILE_SIZE = 16; //Tile size, in pixels
 	const Dim2Di DOOR_TILESIZE = { 64, 32 }; //Door size, in pixels
 	const unsigned char TILE_NUM = 67; //Total number of tiles
-	const unsigned char DOOR_START_NUM = TILE_NUM - 3; //Where the doors start on the tile list
-	const Dim2Di WALL_RANGE = { 1, 20 }; //Where the wall tiles are in the list
-	const Dim2Di FLOOR_RANGE = { 32, 39 }; //Where the floor tiles are in the list
-	const Dim2Di WALL_SIDE_RANGE = { 45, 50 }; //Where the wall sides are in the list
-	const Dim2Di WALL_TOP_RANGE = { 51, 57 }; //Where the wall tops are in the list
-	const Dim2Di WALL_CORNER_RANGE = { 58, 61 }; //Where the wall corners are in the list
+	//Tile: Tile dimensions
 	const char WALL_SIDE_WIDTH = 5; //Width of a wall side, in pixels
-	const char WALL_TOP_HEIGHT = 4; //Width of a wall top, in pixels
+	const char WALL_TOP_HEIGHT = 4; //Width of a wall top, in pixels#
+	const char FOUNTAIN_BASIN_HEIGHT = 9;
+	const char FOUNTAIN_TOP_HEIGHT = 7;
+	const char COLUMN_BASE_HEIGHT = 5;
+	const char COLUMN_TOP_HEIGHT = 12;
+	const char DOOR_OPEN_WIDTH = 7;
+	//Tile: Animated tiles
 	const AnimationData FOUNTAIN_ANIM_LAVA = { 0, 2, 0.3f }; //Animation data for lava fountain
 	const sf::IntRect FOUNTAIN_ANIM_LAVA_RECT = { 64, 9, 48, 27 }; //Where the animation is on the spritesheet
 	const AnimationData FOUNTAIN_ANIM_WATER = { 0, 2, 0.3f }; //Animation data for water fountain
 	const sf::IntRect FOUNTAIN_ANIM_WATER_RECT = { 64, 41, 48, 27 }; //Where the animation is on the spritesheet, minus the fountain top
 	const sf::IntRect FOUNTAIN_ANIM_TOP_RECT = { 64, 9, 48, 7 }; //Fountain top rect, for drawing onto the water fountain's texture
-	const char FOUNTAIN_BASIN_HEIGHT = 9;
-	const char COLUMN_BASE_HEIGHT = 5;
-	const char COLUMN_TOP_HEIGHT = 12;
-	const char DOOR_OPEN_WIDTH = 7;
+	//Tile: Tile list
 	const std::vector<Tile> TILE_LIST = {
 		{0, "Darkness", {95, 495, 16, 16} },
 		{1, "Wall Left", {16, 16, 16, 16} },
@@ -224,16 +221,24 @@ namespace GC
 		T_WALL_CORNER_TOP_RIGHT, T_WALL_IN_CORNER_T_TOP_LEFT, T_WALL_IN_CORNER_T_TOP_RIGHT, T_WALL_CORNER_BOTTOM_LEFT, T_WALL_IN_CORNER_L_TOP_LEFT,
 		T_WALL_CORNER_BOTTOM_RIGHT, T_WALL_IN_CORNER_L_TOP_RIGHT, T_BLANK_1, T_BLANK_2, T_DOOR_UP, T_DOOR_DOWN
 	};
+	//Tile: Tile list ranges
+	const unsigned char DOOR_START_NUM = TILE_NUM - 3; //Where the doors start on the tile list
+	const Dim2Di WALL_RANGE = { 1, 20 }; //Where the wall tiles are in the list
+	const Dim2Di FLOOR_RANGE = { 32, 39 }; //Where the floor tiles are in the list
+	const Dim2Di WALL_SIDE_RANGE = { 45, 50 }; //Where the wall sides are in the list
+	const Dim2Di WALL_TOP_RANGE = { 51, 57 }; //Where the wall tops are in the list
+	const Dim2Di WALL_CORNER_RANGE = { 58, 61 }; //Where the wall corners are in the list
 
-
-	//Room
+	//Room: General
 	const char ROOM_NUM = 3; //Number of rooms
 	const char ROOM_MAX_SIZE = 32; //Max size of a room, in tiles
 	const char ROOM_MAX_DOORS = 4; //Max doors in a room
+	//Room: Types
 	const Dim2Di ROOM_TYPE_0 = { 32, 32 };
 	const Dim2Di ROOM_TYPE_1 = { 16, 16 };
 	const Dim2Di ROOM_TYPE_2 = { 32, 16 };
 	const Dim2Di ROOM_TYPE_3 = { 16, 32 };
+	//Room: Tilemaps
 	const std::vector<RoomData> ROOM_LIST = {
 		{1, {{54, 23, 52, 22, 64, 64, 64, 64, 22, 52, 52, 52, 23, 52, 52, 55},
 			{14, 19, 02, 16, 64, 64, 64, 64, 16, 02, 04, 02, 18, 02, 02, 15},
@@ -289,30 +294,41 @@ namespace GC
 	const short MAP_SIZE_PIXELS = MAP_SIZE_TILES * TILE_SIZE; //Maximum size of map, in pixels
 
 	//Entity
-	const unsigned char FEET_COLLISION_HEIGHT = 2;
+	const unsigned char FEET_COLLISION_HEIGHT = 2; //Feet collision box height
+	const unsigned char C_OFFSET = 1; //Offset for smooth collision
 
-	//Player
-	const unsigned char PLAYER_ANIM_FRAMES = 9; //Number of frames
-	const sf::IntRect KNIGHT_ANIM_RECT = { 128, 106, 144, 22 }; //Where the animation is on the spritesheet
-	enum PLAYER_ANIMATION { IDLE = 0, MOVE = 4, DODGE = 8 }; //Animation frame
-	const AnimationData PLAYER_ANIM_IDLE = { IDLE, MOVE - 1, 0.12f }; //Idle animation data for the player
-	const AnimationData PLAYER_ANIM_MOVE = { MOVE, DODGE - 1, 0.12f }; //Idle animation data for the player
+	//Player: General
 	const sf::IntRect PLAYER_BODY_RECT = { 0, 6, 16, 16 }; //Where the character's body is on the un-scaled sprite
 	const Dim2Di PLAYER_BODY_CENTRE = { 8, 14 }; //Where the centre of the character's body is on the un-scaled sprite
 	const Dim2Di PLAYER_DIMENSIONS = { 16, 22 }; //Dimensions of the player texture
+	//Player: Animation
+	const unsigned char PLAYER_ANIM_FRAMES = 9; //Number of frames
+	enum PLAYER_ANIMATION { IDLE = 0, MOVE = 4, DODGE = 8 }; //Animation frame
+	const AnimationData PLAYER_ANIM_IDLE = { IDLE, MOVE - 1, 0.12f }; //Idle animation data for the player
+	const AnimationData PLAYER_ANIM_MOVE = { MOVE, DODGE - 1, 0.12f }; //Idle animation data for the player
+	//Player: Knight
+	const sf::IntRect KNIGHT_ANIM_RECT = { 128, 106, 144, 22 }; //Where the animation is on the spritesheet
+	
 
 	//Enemy
 
-	//Weapon
-	const sf::IntRect SWORD_RECT = { 323, 26, 10, 21 }; //Where the sword is on the spritesheet
+	//Weapon: General
+	const unsigned char MAX_ATTACKS = 2; //Maximum number of attacks per weapon
 	const float WEAPON_HOVER = 0.5f; //Hover distance from centre, in tiles
 	const float WEAPON_HOVER_ROTATION = 30.f; //Hover rotation, in degrees
+	//Weapon: Sword
+	const sf::IntRect SWORD_RECT = { 323, 26, 10, 21 }; //Where the sword is on the spritesheet
+	const Dim2Df SWORD_ORIGIN = {5.f, 18.f}; //The point at which the weapon is held
+	const float SWORD_RANGE = SWORD_ORIGIN.y + (WEAPON_HOVER * TILE_SIZE); //Default sword range (without motion movement)
+	//!!! Necessary yet? !!!
+	const float SWORD_DAMAGE_MULTIPLIER = 1.f; //Maybe N/A for this version
 
 	//Attack
-	const unsigned char MAX_MOTIONS = 2;
+	const unsigned char MAX_MOTIONS = 2; //Maximum number of motions per attack
+	const char DEFAULT_DAMAGE = 1; //Default damage value
 
 	//Projectiles
-	const short MAX_PROJECTILES = 512;
+	const short MAX_PROJECTILES = 512; //Maximum number of projectiles
 
 	//Enums
 	enum GAME_STATE { MAIN_MENU, PLAYING, WIN, LOSE }; //Current game state
@@ -321,7 +337,7 @@ namespace GC
 		SPRITESHEET_TEXTURE, MAP_FLOOR_TEXTURE, TILE_TEXTURE, DOOR_TEXTURE, DOOR_OPEN_TEXTURE, WALL_SIDE_TEXTURE, WALL_TOP_TEXTURE, WATER_FOUNTAIN_TEXTURE,
 		LAVA_FOUNTAIN_TEXTURE, PLAYER_TEXTURE
 	};
-	enum ATTACK_TYPES { ARC, CHARGE, POINT, AREA, PROJECTILE }; //Type of attack
+	enum ATTACK_TYPES { ARC, POINT, AREA }; //Type of attack
 	enum ENTITY_STATES { STATIONARY, MOVING, ATTACKING_STATIONARY, ATTACKING_MOVING, DODGING }; //Current enemy state
 	enum ENTITY_WEIGHTS { LIGHT, MEDIUM, HEAVY }; //Weight of entity, reduces knockback
 	enum WEAPON_STATES { HOLDING, CHARGING_ARC }; //Current weapon state
@@ -329,11 +345,7 @@ namespace GC
 	enum ROOM_TYPES { R32X32, R16X16, R32X16, R16X32 }; //Room types
 	enum ATTACK_INPUTS { FIRST_ATTACK, SECOND_ATTACK }; //Attack inputs
 	enum COLLISION_TYPES {
-		C_FREE_MOVEMENT, C_WALL, C_WALL_TOP, C_WALL_SIDE_LEFT, C_WALL_SIDE_RIGHT, C_WALL_TOP_BOTTOM_LEFT, C_WALL_TOP_BOTTOM_RIGHT, C_FOUNTAIN_BASIN,
+		C_FREE_MOVEMENT, C_WALL, C_WALL_TOP, C_WALL_SIDE_LEFT, C_WALL_SIDE_RIGHT, C_WALL_TOP_BOTTOM_LEFT, C_WALL_TOP_BOTTOM_RIGHT, C_FOUNTAIN_TOP, C_FOUNTAIN_BASIN,
 		C_COLUMN_TOP, C_COLUMN_BASE, C_CORNER_BOTTOM_LEFT, C_CORNER_BOTTOM_RIGHT
 	}; //Collision map types
 }
-
-//Updates position of a sprite based on global position
-//Returns true if sprite is inside the map area and therefore drawable
-bool UpdateSpritePosition(const GameData& game, sf::Sprite& sprite, const sf::FloatRect& globalRect, sf::FloatRect& localRect);
