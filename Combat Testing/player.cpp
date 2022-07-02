@@ -22,7 +22,7 @@ void Player::Init(GameData& game)
 
 	//Weapon
 	entity.weapon = GC::SWORD;
-	entity.weapon.Init(game);
+	entity.weapon.Init(game, entity.isPlayer);
 }
 
 //Get inputs and react
@@ -92,25 +92,25 @@ void Player::KeyboardControls(const sf::Event& event, const GameData& game)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
 	{
 		entity.weapon = GC::SWORD;
-		entity.weapon.Init(game);
+		entity.weapon.Init(game, entity.isPlayer);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
 	{
 		entity.weapon = GC::SPEAR;
-		entity.weapon.Init(game);
+		entity.weapon.Init(game, entity.isPlayer);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
 	{
 		//entity.weapon.attack0 = GC::SWORD_OF_DOOM_ATTACK;
 		entity.weapon = GC::RUSTED_SWORD;
-		entity.weapon.Init(game);
+		entity.weapon.Init(game, entity.isPlayer);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V))
 	{
 		//entity.weapon.attack0 = GC::NORMAL_STRAIGHT_THROW_ATTACK;
 		//entity.weapon.attack1 = GC::NORMAL_SPINNING_THROW_ATTACK;
 		entity.weapon = GC::FANCY_SWORD;
-		entity.weapon.Init(game);
+		entity.weapon.Init(game, entity.isPlayer);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 	{
@@ -119,7 +119,7 @@ void Player::KeyboardControls(const sf::Event& event, const GameData& game)
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
 	{
 		entity.weapon = GC::IMP_WEAPON;
-		entity.weapon.Init(game);
+		entity.weapon.Init(game, entity.isPlayer);
 	}
 }
 
@@ -274,7 +274,7 @@ void Player::CheckAttackCollision(std::vector<Enemy>& enemies)
 				Dim2Df position = enemies[index].entity.sprite.getPosition();
 				float distanceToEnemy = CalculateMagnitudeOfVector(entity.weapon.sprite.getPosition() - position);
 
-				//If in range, attack
+				//If in range, check collision
 				if (distanceToEnemy <= GC::CHECK_ATTACK_COLLISION_RANGE)
 				{
 					if (entity.weapon.sprite.getGlobalBounds().intersects(enemies[index].entity.sprite.getGlobalBounds()))
@@ -322,6 +322,11 @@ void Player::UpdateInvulnerability(const GameData& game)
 	//Invulnerability
 	if (hit)
 	{
+		if (entity.health <= 0)
+		{
+			printf("my balls tingle when your mum touches them\n");
+		}
+
 		entity.invulnerable = true;
 		entity.invulnerabilityTimer = GC::PLAYER_HIT_INVULNERABILITY;
 		entity.sprite.setColor(GC::PLAYER_HIT_COLOUR);

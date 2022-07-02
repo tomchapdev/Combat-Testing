@@ -20,7 +20,6 @@ void Enemy::Init(GameData& game, const Dim2Df spawnPosition)
 
 		//Weapon
 		entity.weapon = GC::IMP_WEAPON;
-		entity.weapon.Init(game);
 	}
 	else if (ID == GC::ID_LESSER_DEMON)
 	{
@@ -36,7 +35,6 @@ void Enemy::Init(GameData& game, const Dim2Df spawnPosition)
 
 		//Weapon
 		entity.weapon = GC::L_DEMON_WEAPON;
-		entity.weapon.Init(game);
 	}
 	else if (ID == GC::ID_ABERRANT)
 	{
@@ -52,7 +50,6 @@ void Enemy::Init(GameData& game, const Dim2Df spawnPosition)
 
 		//Weapon
 		entity.weapon = GC::RUSTED_SWORD;
-		entity.weapon.Init(game);
 	}
 	else if (ID == GC::ID_GREATER_DEMON)
 	{
@@ -68,9 +65,9 @@ void Enemy::Init(GameData& game, const Dim2Df spawnPosition)
 
 		//Weapon
 		entity.weapon = GC::G_DEMON_WEAPON;
-		entity.weapon.Init(game);
 	}
 
+	entity.weapon.Init(game, entity.isPlayer);
 	entity.anim.Init(&GC::ENEMY_ANIM_IDLE);
 	entity.sprite.setPosition(spawnPosition);
 }
@@ -238,7 +235,7 @@ void Enemy::CheckAttackCollision(GameData& game, Entity& playerEntity)
 			distanceToEnemy = CalculateMagnitudeOfVector(entity.weapon.sprite.getPosition() - position);
 		}
 
-		//If in range, attack
+		//If in range, check collision
 		if (distanceToEnemy <= GC::CHECK_ATTACK_COLLISION_RANGE)
 		{
 			bool hitPlayer = false;

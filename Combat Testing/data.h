@@ -195,7 +195,6 @@ namespace GC
 	const Dim2Df START_POSITION = { 684.f, 684.f }; //Start position
 	const float PLAYER_HIT_INVULNERABILITY = 2.f; //How long the player is invulnerable after being hit
 	const float PLAYER_DODGE_INVULNERABILITY = 0.5f; //Invulnerability while dodging
-	const sf::Color PLAYER_HIT_COLOUR = sf::Color::Blue;
 	//Player: Animation
 	const unsigned char PLAYER_ANIM_FRAMES = 9; //Number of frames
 	const AnimationData PLAYER_ANIM_IDLE = { IDLE, MOVE - 1, 0.12f }; //Idle animation data for the player
@@ -264,4 +263,8 @@ namespace GC
 	//Knockback
 	const float KNOCKBACK_TIMER = 0.25f; //How long an enemy is knocked back for
 	const float KNOCKBACK_INVULNERABILITY = 0.15f; //How long an entity is invulnerable for in knockback
+
+	//Colours
+	const sf::Color PLAYER_HIT_COLOUR = sf::Color(51, 102, 255); //Softer blue than default
+	const sf::Color PLAYER_PROJECTILE_COLOUR = sf::Color(153, 204, 0); //Softer green than default
 }

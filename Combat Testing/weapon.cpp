@@ -24,8 +24,6 @@ void Projectile::Update(const GameData& game)
 
 		motion.UpdatePosition(&sprite, followingFacing, *facing, angle, data.radius);
 		UpdateRotation(motion, sprite, angle);
-		 
-		//COLLISION DETECTION NEEDS TO GO HERE!
 
 		//Time
 		if (!motion.loop)
@@ -332,6 +330,12 @@ void Attack::SpawnProjectiles(const GameData& game, std::vector<Projectile>& pro
 				projList[index].origin = sprite->getPosition();
 			}
 
+			projList[index].playerProjectile = projectileShotByPlayer;
+			if (projectileShotByPlayer)
+			{
+				projList[index].sprite.setColor(GC::PLAYER_PROJECTILE_COLOUR);
+			}
+
 			if (hasSpread)
 			{
 				projList[index].angle = initialAngle + spreadList[projectileCount - 1];
@@ -375,9 +379,11 @@ void Attack::Stop()
 }
 
 //Initializes the weapon from a template
-void Weapon::Init(const GameData& game)
+void Weapon::Init(const GameData& game, const bool& isPlayer)
 {
 	active = true;
+	attack0.projectileShotByPlayer = isPlayer;
+	attack1.projectileShotByPlayer = isPlayer;
 
 	if (entityIsWeapon)
 	{
@@ -479,27 +485,5 @@ void UpdateRotation(const Motion& motion, sf::Sprite& sprite, const float& initi
 	else //if (followingFacing)
 	{
 		sprite.setRotation(initialAngle);
-	}
-}
-
-//Initializes all projectiles
-void InitProjectiles(const GameData& game, std::vector<Projectile>& projList)
-{
-	for (short index = 0; index < GC::MAX_PROJECTILES; ++index)
-	{
-		projList[index].sprite.setTexture(game.textures[GC::SPRITESHEET_TEXTURE]);
-	}
-}
-
-//Updates all active projectiles
-void UpdateProjectiles(const GameData& game, sf::RenderWindow& window, std::vector<Projectile>& projList)
-{
-	for (short index = 0; index < GC::MAX_PROJECTILES; ++index)
-	{
-		if (projList[index].active)
-		{
-			projList[index].Update(game);
-			projList[index].Render(window);
-		}
 	}
 }

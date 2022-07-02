@@ -26,7 +26,8 @@ struct Projectile
 	bool followingFacing = true; //If the projectile is actively following the entity facing
 
 	//Operational bools
-	bool active = false;
+	bool active = false; //If the projectile is currently active
+	bool playerProjectile = false; //If it is a player or enemy projectile
 
 	//Positioning
 	Dim2Df origin = { 0.f, 0.f };
@@ -75,6 +76,7 @@ struct Attack //Setup: {motion0, motion1}, ProjectileData*, AnimationData*, shor
 	bool motionFinished = false; //If all motions for this attack are finished
 	bool entityIsWeapon = false; //If the entity sprite is the attacking object
 	bool animStarted = false; //Has the animation been initiated
+	bool projectileShotByPlayer = false; //If the spawned projectile is being shot from the player or an enemy
 
 	//Positioning
 	Dim2Df origin{};
@@ -139,7 +141,7 @@ struct Weapon //Setup: attack0, attack1, sf::IntRect* textureRect, Dim2Df* origi
 	float holdDistance = GC::WEAPON_HOVER * GC::TILE_SIZE; //How far away the weapon is held
 
 	//Initializes the weapon from a template
-	void Init(const GameData& game);
+	void Init(const GameData& game, const bool& isPlayer);
 
 	//Updates the position of the weapon
 	void UpdateHoldPosition(const DirectionalAngle& facing, const Dim2Df holdOrigin);
@@ -153,12 +155,6 @@ struct Weapon //Setup: attack0, attack1, sf::IntRect* textureRect, Dim2Df* origi
 
 //Updates the rotation of the sprite
 void UpdateRotation(const Motion& motion, sf::Sprite& sprite, const float& initialAngle);
-
-//Initializes all projectiles
-void InitProjectiles(const GameData& game, std::vector<Projectile>& projList);
-
-//Updates all active projectiles
-void UpdateProjectiles(const GameData& game, sf::RenderWindow& window, std::vector<Projectile>& projList);
 
 //Game constants
 namespace GC
