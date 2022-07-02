@@ -21,7 +21,7 @@ void Game::Init(sf::RenderWindow& window)
 
 	//Player
 	player1.Init(gamedata);
-	gamedata.playerSprite = &player1.entity.sprite;
+	gamedata.playerHit = &player1.hit;
 
 	//Enemy
 	Enemy enemy1;
@@ -54,7 +54,7 @@ void Game::GameLoop(sf::RenderWindow& window)
 	player1.Update(window, gamedata, projectiles, enemyList);
 
 	//Enemy
-	enemyList[0].Update(gamedata, projectiles);
+	enemyList[0].Update(gamedata, projectiles, player1.entity);
 
 	//Update the window
 	gamedata.RenderMap(window, player1.entity.sprite.getPosition());

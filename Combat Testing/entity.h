@@ -33,7 +33,7 @@ struct Entity
 	bool nearPlayer = false; //In the rendered map area or not
 
 	//Main stats
-	short int health = 0; //Hit points
+	short health = 0; //Hit points
 	float attackSpeed = 1.f; //Attack speed multiplier
 	float power = 1.f; //Damage multiplier
 

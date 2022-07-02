@@ -27,7 +27,7 @@ struct Enemy
 	void Init(GameData& game, const Dim2Df spawnPosition);
 
 	//Face enemy towards player
-	void TargetPlayer(const GameData& game);
+	void TargetPlayer(const Entity& playerEntity);
 
 	//Move enemy towards player
 	void MoveTowardsPlayer(const GameData& game);
@@ -36,7 +36,10 @@ struct Enemy
 	void CheckAttackRange(const GameData& game);
 
 	//Enemy behaviour
-	void Update(const GameData& game, std::vector<Projectile>& proj);
+	void Update(GameData& game, std::vector<Projectile>& proj, Entity& playerEntity);
+
+	//Check if attack hits player
+	void CheckAttackCollision(GameData& game, Entity& playerEntity);
 };
 
 //Game constants

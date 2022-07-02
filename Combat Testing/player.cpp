@@ -26,7 +26,7 @@ void Player::Init(GameData& game)
 }
 
 //Get inputs and react
-void Player::InputHandling(sf::RenderWindow& window, GameData& game)
+void Player::InputHandling(sf::RenderWindow& window, const GameData& game)
 {
 	sf::Event event;
 
@@ -51,7 +51,7 @@ void Player::InputHandling(sf::RenderWindow& window, GameData& game)
 }
 
 //Controls for keyboard
-void Player::KeyboardControls(const sf::Event& event, GameData& game)
+void Player::KeyboardControls(const sf::Event& event, const GameData& game)
 {
 	//Movement
 	KeyboardMovement(event);
@@ -245,7 +245,7 @@ void Player::KeyboardMovement(const sf::Event& event)
 }
 
 //Find the entity's facing angle based on mouse position
-void Player::GetMouseAngle(GameData& game)
+void Player::GetMouseAngle(const GameData& game)
 {
 	//Find origin and target points
 	Dim2Df centre = { (float)(game.screenResolution.x / 2), (float)(game.screenResolution.y / 2) };
@@ -268,7 +268,7 @@ void Player::CheckAttackCollision(std::vector<Enemy>& enemies)
 	{
 		for (char index = 0; index < GC::MAX_ENEMIES; index++)
 		{
-			if (enemies[index].active)
+			if (enemies[index].active && !enemies[index].entity.invulnerable)
 			{
 				//Calculate distance to enemy
 				Dim2Df position = enemies[index].entity.sprite.getPosition();
@@ -279,19 +279,16 @@ void Player::CheckAttackCollision(std::vector<Enemy>& enemies)
 				{
 					if (entity.weapon.sprite.getGlobalBounds().intersects(enemies[index].entity.sprite.getGlobalBounds()))
 					{
-						if (!enemies[index].entity.invulnerable)
+						//Calculate damage
+						float damage = entity.power * GC::DEFAULT_DAMAGE;
+
+						if (entity.weapon.attack1.active) //Heavy attack
 						{
-							//Calculate damage
-							float damage = entity.power * GC::DEFAULT_DAMAGE;
-
-							if (entity.weapon.attack1.active) //Heavy attack
-							{
-								damage *= heavyAttackMultiplier;
-							}
-
-							unsigned char actualDamage = (unsigned char)round(damage);
-							enemies[index].entity.TakeDamage(actualDamage, entity.facing, knockbackPower);
+							damage *= heavyAttackMultiplier;
 						}
+
+						unsigned char actualDamage = (unsigned char)round(damage);
+						enemies[index].entity.TakeDamage(actualDamage, entity.facing, knockbackPower);
 					}
 				}
 			}
@@ -300,16 +297,48 @@ void Player::CheckAttackCollision(std::vector<Enemy>& enemies)
 }
 
 //Updates player state
-void Player::Update(sf::RenderWindow& window, GameData& gamedata, std::vector<Projectile> projectiles, std::vector<Enemy>& enemies)
+void Player::Update(sf::RenderWindow& window, const GameData& game, std::vector<Projectile> projectiles, std::vector<Enemy>& enemies)
 {
-	InputHandling(window, gamedata);
+	//Invulnerability
+	UpdateInvulnerability(game);
 
-	if (entity.moving)
+	//Input
+	InputHandling(window, game);
+
+	//Movement
+	if (entity.moving && !dodging)
 	{
-		entity.Move(gamedata);
+		entity.Move(game);
 	}
 
-	entity.UpdateWeapon(gamedata, projectiles);
-
+	//Weapon
+	entity.UpdateWeapon(game, projectiles);
 	CheckAttackCollision(enemies);
+}
+
+//Handles invulnerability
+void Player::UpdateInvulnerability(const GameData& game)
+{
+	//Invulnerability
+	if (hit)
+	{
+		entity.invulnerable = true;
+		entity.invulnerabilityTimer = GC::PLAYER_HIT_INVULNERABILITY;
+		entity.sprite.setColor(GC::PLAYER_HIT_COLOUR);
+		entity.weapon.sprite.setColor(GC::PLAYER_HIT_COLOUR);
+		hit = false;
+	}
+	else if (entity.invulnerable)
+	{
+		if (entity.invulnerabilityTimer < 0.f)
+		{
+			entity.invulnerable = false;
+			entity.sprite.setColor(sf::Color::White);
+			entity.weapon.sprite.setColor(sf::Color::White);
+		}
+		else
+		{
+			entity.invulnerabilityTimer -= game.elapsed;
+		}
+	}
 }

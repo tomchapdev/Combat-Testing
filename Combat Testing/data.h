@@ -59,7 +59,7 @@ struct GameData
 	float elapsed = 0.f; //Time elapsed since last frame
 
 	//Pointers
-	sf::Sprite* playerSprite = nullptr;
+	bool* playerHit = nullptr; //If the player has just been hit
 
 	//Initializes game session
 	void Init(sf::RenderWindow& window);
@@ -193,6 +193,9 @@ namespace GC
 
 	//Player: General
 	const Dim2Df START_POSITION = { 684.f, 684.f }; //Start position
+	const float PLAYER_HIT_INVULNERABILITY = 2.f; //How long the player is invulnerable after being hit
+	const float PLAYER_DODGE_INVULNERABILITY = 0.5f; //Invulnerability while dodging
+	const sf::Color PLAYER_HIT_COLOUR = sf::Color::Blue;
 	//Player: Animation
 	const unsigned char PLAYER_ANIM_FRAMES = 9; //Number of frames
 	const AnimationData PLAYER_ANIM_IDLE = { IDLE, MOVE - 1, 0.12f }; //Idle animation data for the player
@@ -246,7 +249,7 @@ namespace GC
 	const float WEAPON_HOVER_ROTATION = 30.f; //Hover rotation, in degrees
 
 	//Projectiles: General
-	const short MAX_PROJECTILES = 512;
+	const short MAX_PROJECTILES = 256;
 	//Projectiles: Fiery Skull
 	const unsigned char FIRE_SKULL_FRAMES = 6; //Number of frames
 	const AnimationData FIRE_SKULL_ANIM = { 0, FIRE_SKULL_FRAMES - 1, 0.09f }; //Idle animation data for the player

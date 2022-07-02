@@ -76,13 +76,11 @@ void Enemy::Init(GameData& game, const Dim2Df spawnPosition)
 }
 
 //Face enemy towards player
-void Enemy::TargetPlayer(const GameData& game)
+void Enemy::TargetPlayer(const Entity& playerEntity)
 {
-	game.playerSprite->getPosition();
-
 	//Find origin and target points
 	Dim2Df centre = entity.sprite.getPosition();
-	Dim2Df targetPosition = game.playerSprite->getPosition();
+	Dim2Df targetPosition = playerEntity.sprite.getPosition();
 
 	//Get vector between points, then calculate directional angle using vector
 	entity.facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(centre, targetPosition));
@@ -170,28 +168,32 @@ void Enemy::CheckAttackRange(const GameData& game)
 }
 
 //Enemy behaviour
-void Enemy::Update(const GameData& game, std::vector<Projectile>& proj)
+void Enemy::Update(GameData& game, std::vector<Projectile>& proj, Entity& playerEntity)
 {
 	if (entity.isAlive)
 	{
 		//Target and movement
-		TargetPlayer(game);
-		distanceToPlayer = CalculateMagnitudeOfVector(game.playerSprite->getPosition() - entity.sprite.getPosition());
+		TargetPlayer(playerEntity);
+		distanceToPlayer = CalculateMagnitudeOfVector(playerEntity.sprite.getPosition() - entity.sprite.getPosition());
 
 		//Attack handling
 		if (entity.canAttack && !attackCooldown)
 		{
 			MoveTowardsPlayer(game);
 			CheckAttackRange(game);
-			entity.UpdateWeapon(game, proj);
+			entity.UpdateWeapon(game, proj); //Updates held weapons
 		}
 		else if (entity.weapon.attacking)
 		{
-			entity.UpdateWeapon(game, proj);
+			entity.UpdateWeapon(game, proj); //Updates attack
 
-			if (entity.canAttack)
+			if (entity.canAttack) //Applies cooldown as soon as an attack ends
 			{
 				attackCooldown = true;
+			}
+			else
+			{
+				CheckAttackCollision(game, playerEntity);
 			}
 
 			if (entity.weapon.visible) //Aberrants always chase the player
@@ -202,7 +204,7 @@ void Enemy::Update(const GameData& game, std::vector<Projectile>& proj)
 		else //(attackCooldown)
 		{
 			MoveTowardsPlayer(game);
-			entity.UpdateWeapon(game, proj); //Updates hold rotation and weapon bobbing
+			entity.UpdateWeapon(game, proj); //Updates held weapons
 			cooldownTimer -= game.elapsed;
 
 			if (cooldownTimer < 0.f)
@@ -215,5 +217,49 @@ void Enemy::Update(const GameData& game, std::vector<Projectile>& proj)
 	else
 	{
 		active = false;
+	}
+}
+
+//Check if attack hits player
+void Enemy::CheckAttackCollision(GameData& game, Entity& playerEntity)
+{
+	if (entity.weapon.CheckIfMotionCanDamage() && !playerEntity.invulnerable)
+	{
+		//Calculate distance to enemy
+		Dim2Df position = playerEntity.sprite.getPosition();
+		float distanceToEnemy;
+
+		if (entity.weapon.entityIsWeapon)
+		{
+			distanceToEnemy = CalculateMagnitudeOfVector(entity.sprite.getPosition() - position);
+		}
+		else
+		{
+			distanceToEnemy = CalculateMagnitudeOfVector(entity.weapon.sprite.getPosition() - position);
+		}
+
+		//If in range, attack
+		if (distanceToEnemy <= GC::CHECK_ATTACK_COLLISION_RANGE)
+		{
+			bool hitPlayer = false;
+
+			if (entity.weapon.entityIsWeapon)
+			{
+				hitPlayer = entity.sprite.getGlobalBounds().intersects(playerEntity.sprite.getGlobalBounds());
+			}
+			else
+			{
+				hitPlayer = entity.weapon.sprite.getGlobalBounds().intersects(playerEntity.sprite.getGlobalBounds());
+			}
+
+			if (hitPlayer)
+			{
+				//Calculate damage
+				unsigned char actualDamage = (unsigned char)round(entity.power * GC::DEFAULT_DAMAGE);
+				playerEntity.TakeDamage(actualDamage, entity.facing, GC::ZERO);
+				playerEntity.invulnerable = true;
+				*game.playerHit = true;
+			}
+		}
 	}
 }
