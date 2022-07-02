@@ -34,7 +34,7 @@ struct UI
 	void UpdateItemBar();
 };
 
-//Global Constants
+//Game constants
 namespace GC
 {
 	//Font

@@ -1,7 +1,5 @@
 #include "data.h"
 
-//Functions
-
 //Initializes game session
 void GameData::Init(sf::RenderWindow& window)
 {
@@ -46,8 +44,20 @@ void GameData::Init(sf::RenderWindow& window)
 	textures[GC::WATER_FOUNTAIN_TEXTURE].update(fountainTop);
 
 	//Entity Textures
-	textures[GC::PLAYER_TEXTURE].create(GC::KNIGHT_ANIM_RECT.width, GC::KNIGHT_ANIM_RECT.height);
-	textures[GC::PLAYER_TEXTURE].loadFromImage(spritesheetImg, GC::KNIGHT_ANIM_RECT);
+	textures[GC::KNIGHT_TEXTURE].create(GC::KNIGHT_ANIM_RECT.width, GC::KNIGHT_ANIM_RECT.height);
+	textures[GC::KNIGHT_TEXTURE].loadFromImage(spritesheetImg, GC::KNIGHT_ANIM_RECT);
+	textures[GC::IMP_TEXTURE].create(GC::IMP_ANIM_RECT.width, GC::IMP_ANIM_RECT.height);
+	textures[GC::IMP_TEXTURE].loadFromImage(spritesheetImg, GC::IMP_ANIM_RECT);
+	textures[GC::L_DEMON_TEXTURE].create(GC::L_DEMON_ANIM_RECT.width, GC::L_DEMON_ANIM_RECT.height);
+	textures[GC::L_DEMON_TEXTURE].loadFromImage(spritesheetImg, GC::L_DEMON_ANIM_RECT);
+	textures[GC::ABERRANT_TEXTURE].create(GC::ABERRANT_ANIM_RECT.width, GC::ABERRANT_ANIM_RECT.height);
+	textures[GC::ABERRANT_TEXTURE].loadFromImage(spritesheetImg, GC::ABERRANT_ANIM_RECT);
+	textures[GC::G_DEMON_TEXTURE].create(GC::G_DEMON_ANIM_RECT.width, GC::G_DEMON_ANIM_RECT.height);
+	textures[GC::G_DEMON_TEXTURE].loadFromImage(spritesheetImg, GC::G_DEMON_ANIM_RECT);
+
+	//Projectile Textures
+	textures[GC::FIRE_SKULL_TEXTURE].create(GC::FIRE_SKULL_ANIM_RECT.width, GC::FIRE_SKULL_ANIM_RECT.height);
+	textures[GC::FIRE_SKULL_TEXTURE].loadFromImage(spritesheetImg, GC::FIRE_SKULL_ANIM_RECT);
 
 	//Scaling
 	if ((screenResolution.x == 3840) && (screenResolution.y == 2160))
@@ -75,10 +85,10 @@ void GameData::Init(sf::RenderWindow& window)
 	mapSprite.setTexture(textures[GC::MAP_FLOOR_TEXTURE], true);
 }
 
-//Renders the map onto the camera, based on player position
+//Renders the map
 void GameData::RenderMap(sf::RenderWindow& window, const Dim2Df position)
 {
-	window.draw(mapSprite);
 	camera.setCenter(position);
 	window.setView(camera);
+	window.draw(mapSprite);
 }

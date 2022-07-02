@@ -1,42 +1,28 @@
 #include "player.h"
 #include "maths.h"
 
-//Functions
-
 //Initializes player
 void Player::Init(GameData& game)
 {
-	//Positioning
-	entity.bodyCentre = Dim2Df(GC::PLAYER_BODY_CENTRE); //DUPLICATED INFORMATION, NOT NECESSARY
+	//Stats
+	speed = GC::MEDIUM_MOVEMENT_SPEED;
 
 	//Entity stats
 	entity.isPlayer = true;
 	entity.health = 10;
-	entity.speed = 130.f;
-	entity.collisionRect = GC::PLAYER_BODY_RECT;
-	entity.anim.data = &GC::PLAYER_ANIM_IDLE;
-
-	//Weapon stats
-	entity.weapon.active = true;
-	entity.weapon.visible = true;
-	entity.weapon.holdDistance = GC::WEAPON_HOVER * GC::TILE_SIZE;
-	entity.weapon.hasTwoAttacks = true;
-	entity.weapon.attack0 = GC::NORMAL_SWING_ATTACK;
-	entity.weapon.attack1 = GC::HEAVY_SWING_ATTACK;
-	//entity.weapon.Init(0); //Needs altering when I add weapon templates
+	entity.collisionRect = GC::KNIGHT_BODY_RECT;
+	entity.anim.Init(&GC::PLAYER_ANIM_IDLE);
 
 	//SFML
-	entity.texture = &game.textures[GC::PLAYER_TEXTURE];
+	entity.texture = &game.textures[GC::KNIGHT_TEXTURE];
 	entity.sprite.setTexture(*entity.texture);
-	entity.sprite.setTextureRect({ 0, 0, 16, 22 });
-	entity.sprite.setOrigin(entity.bodyCentre);
-	entity.sprite.setPosition(684.f, 684.f);
+	entity.sprite.setTextureRect({ 0, 0, GC::KNIGHT_DIMENSIONS.x, GC::KNIGHT_DIMENSIONS.y });
+	entity.sprite.setOrigin(Dim2Df(GC::KNIGHT_BODY_CENTRE));
+	entity.sprite.setPosition(GC::START_POSITION);
 
-	entity.weapon.texture = &game.textures[GC::SPRITESHEET_TEXTURE];
-	entity.weapon.sprite.setTexture(*entity.weapon.texture);
-	entity.weapon.sprite.setTextureRect(GC::SWORD_RECT);
-	entity.weapon.sprite.setOrigin(GC::SWORD_ORIGIN);
-	entity.weapon.sprite.setPosition(684.f, 684.f);
+	//Weapon
+	entity.weapon = GC::SWORD;
+	entity.weapon.Init(game);
 }
 
 //Get inputs and react
@@ -105,55 +91,35 @@ void Player::KeyboardControls(const sf::Event& event, GameData& game)
 	//Attack swapping for testing
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Z))
 	{
-		entity.weapon.attack0 = GC::NORMAL_SWING_ATTACK;
-		entity.weapon.attack1 = GC::HEAVY_SWING_ATTACK;
+		entity.weapon = GC::SWORD;
+		entity.weapon.Init(game);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::X))
 	{
-		entity.weapon.attack0 = GC::NORMAL_THRUST_ATTACK;
-		entity.weapon.attack1 = GC::HEAVY_THRUST_ATTACK;
+		entity.weapon = GC::SPEAR;
+		entity.weapon.Init(game);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::C))
 	{
-		entity.weapon.attack0 = GC::SWORD_OF_DOOM_ATTACK;
+		//entity.weapon.attack0 = GC::SWORD_OF_DOOM_ATTACK;
+		entity.weapon = GC::RUSTED_SWORD;
+		entity.weapon.Init(game);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::V))
 	{
-		entity.weapon.attack0 = GC::NORMAL_STRAIGHT_THROW_ATTACK;
-		entity.weapon.attack1 = GC::NORMAL_SPINNING_THROW_ATTACK;
+		//entity.weapon.attack0 = GC::NORMAL_STRAIGHT_THROW_ATTACK;
+		//entity.weapon.attack1 = GC::NORMAL_SPINNING_THROW_ATTACK;
+		entity.weapon = GC::FANCY_SWORD;
+		entity.weapon.Init(game);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::E))
 	{
-		//entity.weapon.active = true;
-		entity.weapon.visible = true;
-		entity.weapon.entityIsWeapon = false;
-		entity.weapon.holdDistance = GC::WEAPON_HOVER * GC::TILE_SIZE;
-		entity.weapon.hasTwoAttacks = true;
-		entity.weapon.attack0 = GC::NORMAL_SWING_ATTACK;
-		entity.weapon.attack1 = GC::HEAVY_SWING_ATTACK;
+		//Do nothing
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
 	{
-		//entity.weapon.active = true;
-		entity.weapon.visible = false;
-		entity.weapon.entityIsWeapon = true;
-		entity.weapon.holdDistance = 0.f;
-		entity.weapon.hasTwoAttacks = true;
-		entity.weapon.attack0 = GC::HORN_STAB;
-		entity.weapon.attack1 = GC::CHARGE;
-	}
-
-	//Speed testing
-	if (event.type == sf::Event::KeyReleased)
-	{
-		if (event.key.code == sf::Keyboard::Num1)
-		{
-			entity.speed -= 10.f;
-		}
-		else if (event.key.code == sf::Keyboard::Num2)
-		{
-			entity.speed += 10.f;
-		}
+		entity.weapon = GC::IMP_WEAPON;
+		entity.weapon.Init(game);
 	}
 }
 
@@ -169,7 +135,6 @@ void Player::KeyboardMovement(const sf::Event& event)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) || sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
 		movingLeft = true;
-		//std::cout << "MovingLeft = true" << std::endl;
 	}
 	else
 	{
@@ -178,7 +143,6 @@ void Player::KeyboardMovement(const sf::Event& event)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) || sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
 		movingRight = true;
-		//std::cout << "MovingRight = true" << std::endl;
 	}
 	else
 	{
@@ -187,7 +151,6 @@ void Player::KeyboardMovement(const sf::Event& event)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) || sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 	{
 		movingUp = true;
-		//std::cout << "MovingUp = true" << std::endl;
 	}
 	else
 	{
@@ -196,7 +159,6 @@ void Player::KeyboardMovement(const sf::Event& event)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) || sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 	{
 		movingDown = true;
-		//std::cout << "MovingDown = true" << std::endl;
 	}
 	else
 	{
@@ -221,8 +183,7 @@ void Player::KeyboardMovement(const sf::Event& event)
 		if (!entity.moving)
 		{
 			entity.moving = true;
-			entity.anim.data = &GC::PLAYER_ANIM_MOVE;
-			entity.anim.currentFrame = entity.anim.data->startFrame;
+			entity.anim.Init(&GC::PLAYER_ANIM_MOVE);
 		}
 	}
 	else
@@ -230,8 +191,7 @@ void Player::KeyboardMovement(const sf::Event& event)
 		if (entity.moving)
 		{
 			entity.moving = false;
-			entity.anim.data = &GC::PLAYER_ANIM_IDLE;
-			entity.anim.currentFrame = entity.anim.data->startFrame;
+			entity.anim.Init(&GC::PLAYER_ANIM_IDLE);
 		}
 	}
 
@@ -245,41 +205,41 @@ void Player::KeyboardMovement(const sf::Event& event)
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::NORTH;
-			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, speed);
 		}
 		else if (movingRight && movingDown) //East directional angle
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::EAST;
-			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, speed);
 		}
 		else if (movingLeft && movingDown) //South directional angle
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::SOUTH;
-			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, speed);
 		}
 		else if (movingLeft && movingUp) //West directional angle
 		{
 			dirAngle.angle = GC::RADS_45DEGREES;
 			dirAngle.direction = GC::WEST;
-			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, entity.speed);
+			entity.movementVector = CalculateVectorOfMagnitude(dirAngle, speed);
 		}
 		else if (movingUp) //North
 		{
-			entity.movementVector = { 0.f, -entity.speed };
+			entity.movementVector = { 0.f, -speed };
 		}
 		else if (movingRight) //East
 		{
-			entity.movementVector = { entity.speed, 0.f };
+			entity.movementVector = { speed, 0.f };
 		}
 		else if (movingDown) //South
 		{
-			entity.movementVector = { 0.f, entity.speed };
+			entity.movementVector = { 0.f, speed };
 		}
 		else //West
 		{
-			entity.movementVector = { -entity.speed, 0.f };
+			entity.movementVector = { -speed, 0.f };
 		}
 	}
 }
@@ -299,4 +259,57 @@ void Player::GetMouseAngle(GameData& game)
 void Player::GamepadControls(const sf::Event& event)
 {
 
+}
+
+//Checks attack collision against enemies
+void Player::CheckAttackCollision(std::vector<Enemy>& enemies)
+{
+	if (entity.weapon.attacking && entity.weapon.CheckIfMotionCanDamage())
+	{
+		for (char index = 0; index < GC::MAX_ENEMIES; index++)
+		{
+			if (enemies[index].active)
+			{
+				//Calculate distance to enemy
+				Dim2Df position = enemies[index].entity.sprite.getPosition();
+				float distanceToEnemy = CalculateMagnitudeOfVector(entity.weapon.sprite.getPosition() - position);
+
+				//If in range, attack
+				if (distanceToEnemy <= GC::CHECK_ATTACK_COLLISION_RANGE)
+				{
+					if (entity.weapon.sprite.getGlobalBounds().intersects(enemies[index].entity.sprite.getGlobalBounds()))
+					{
+						if (!enemies[index].entity.invulnerable)
+						{
+							//Calculate damage
+							float damage = entity.power * GC::DEFAULT_DAMAGE;
+
+							if (entity.weapon.attack1.active) //Heavy attack
+							{
+								damage *= heavyAttackMultiplier;
+							}
+
+							unsigned char actualDamage = (unsigned char)round(damage);
+							enemies[index].entity.TakeDamage(actualDamage, entity.facing, knockbackPower);
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+//Updates player state
+void Player::Update(sf::RenderWindow& window, GameData& gamedata, std::vector<Projectile> projectiles, std::vector<Enemy>& enemies)
+{
+	InputHandling(window, gamedata);
+
+	if (entity.moving)
+	{
+		entity.Move(gamedata);
+	}
+
+	entity.UpdateWeapon(gamedata, projectiles);
+
+	CheckAttackCollision(enemies);
 }

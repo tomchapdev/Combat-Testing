@@ -24,45 +24,6 @@ struct Tile
 	sf::IntRect rect{};
 };
 
-//Data used for room generation
-struct RoomData
-{
-	char type = 0;
-	std::vector<std::vector<unsigned char>> tilemap = {
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0} };
-};
-
 //Data used for animations
 struct AnimationData
 {
@@ -97,6 +58,9 @@ struct GameData
 	//Timers
 	float elapsed = 0.f; //Time elapsed since last frame
 
+	//Pointers
+	sf::Sprite* playerSprite = nullptr;
+
 	//Initializes game session
 	void Init(sf::RenderWindow& window);
 
@@ -104,23 +68,35 @@ struct GameData
 	void RenderMap(sf::RenderWindow& window, const Dim2Df position);
 };
 
-//Global constants
+//Game constants
 namespace GC
 {
-	//Screen
+	//Enums
+	enum GAME_STATE { MAIN_MENU, PLAYING, WIN, LOSE }; //Current game state
+	enum DIRECTIONS { NORTH, EAST, SOUTH, WEST }; //NESW directions
+	enum TEXTURE_LIST {
+		SPRITESHEET_TEXTURE, MAP_FLOOR_TEXTURE, TILE_TEXTURE, DOOR_TEXTURE, DOOR_OPEN_TEXTURE, WALL_SIDE_TEXTURE, WALL_TOP_TEXTURE, WATER_FOUNTAIN_TEXTURE,
+		LAVA_FOUNTAIN_TEXTURE, KNIGHT_TEXTURE, IMP_TEXTURE, L_DEMON_TEXTURE, ABERRANT_TEXTURE, G_DEMON_TEXTURE, FIRE_SKULL_TEXTURE
+	};
+	enum PLAYER_INPUT { KEYBOARD, GAMEPAD }; //Player input states
+	enum ROOM_TYPES { R32X32, R16X16, R32X16, R16X32 }; //Room types
+	enum ATTACK_INPUTS { FIRST_ATTACK, SECOND_ATTACK }; //Attack inputs
+	enum COLLISION_TYPES {
+		C_FREE_MOVEMENT, C_WALL, C_WALL_TOP, C_WALL_SIDE_LEFT, C_WALL_SIDE_RIGHT, C_WALL_TOP_BOTTOM_LEFT, C_WALL_TOP_BOTTOM_RIGHT, C_FOUNTAIN_TOP, C_FOUNTAIN_BASIN,
+		C_COLUMN_TOP, C_COLUMN_BASE, C_CORNER_BOTTOM_LEFT, C_CORNER_BOTTOM_RIGHT
+	}; //Collision map types
+	enum ANIMATION { IDLE = 0, MOVE = 4, DODGE = 8 }; //Animation frames
+	enum ENEMY_ID { ID_IMP, ID_LESSER_DEMON, ID_ABERRANT, ID_GREATER_DEMON }; //Enemy IDs
+
+	//Screen: General
 	const float SCALE_1080 = 5.f; //View zoom at 1080p
 	const float SCALE_1440 = 6.4f; //View zoom at 1440p
 	const float SCALE_2160 = 10.f; //View zoom at 2160p
-	/*Area of the map that is drawn, centred on the player
-	This gives plenty of extra room to allow partially on-screen elements
-	to be easily found and drawn onto the screen with minimal excess.*/
-	const Dim2Di MAP_DRAW_SIZE = { 464, 290 }; //Area of the map around the player that is drawn
 	const unsigned char FRAMERATE = 60; //Game refresh rate
 	const float APPROX_ELAPSED = 1.f / (float)GC::FRAMERATE; //Approximate elapsed time
 
-
-	//Textures
-	const char NUM_TEXTURES = 10; //Number of textures used in the game
+	//Textures: General
+	const char NUM_TEXTURES = 15; //Number of textures used in the game
 
 	//Tile: General
 	const char TILE_SIZE = 16; //Tile size, in pixels
@@ -209,143 +185,80 @@ namespace GC
 		{64, "Door Up", {16, 208, 64, 32}},
 		{65, "Door Down", {16, 240, 64, 32}},
 		{66, "Door Open", {80, 208, 32, 32}}
-	}; //{60, "", {}},
-	enum TILES {
-		T_DARKNESS, T_WALL_LEFT, T_WALL_MID, T_WALL_RIGHT, T_WALL_HOLE_1, T_WALL_HOLE_2, T_WALL_BANNER_BLUE, T_WALL_BANNER_GREEN,
-		T_WALL_BANNER_YELLOW, T_WALL_BANNER_RED, T_WALL_CORNER_LEFT, T_WALL_CORNER_RIGHT, T_WALL_CORNER_FRONT_LEFT, T_WALL_CORNER_FRONT_RIGHT,
-		T_WALL_IN_CORNER_MID_LEFT, T_WALL_IN_CORNER_MID_RIGHT, T_WALL_COLUMN_MID, T_COLUMN_MID, T_LAVA_FOUNTAIN_MID, T_WATER_FOUNTAIN_MID, T_WALL_GOO,
-		T_COLUMN_TOP, T_WALL_COLUMN_TOP, T_FOUNTAIN_TOP, T_WALL_COLUMN_BASE, T_COLUMN_BASE, T_LAVA_FOUNTAIN_BASIN, T_WATER_FOUNTAIN_BASIN, T_WALL_GOO_FLOOR,
-		T_EDGE, T_WALL_COLUMN_TOP_FLOOR, T_FOUNTAIN_TOP_FLOOR, T_FLOOR_1, T_FLOOR_2, T_FLOOR_3, T_FLOOR_4, T_FLOOR_5, T_FLOOR_6, T_FLOOR_7, T_FLOOR_8,
-		T_ENEMY_SPAWNER, T_FLOOR_SPIKES, T_FLOOR_LADDER, T_HOLE, T_STAIRS, T_WALL_SIDE_TOP_RIGHT, T_WALL_SIDE_TOP_LEFT, T_WALL_SIDE_MID_RIGHT,
-		T_WALL_SIDE_FRONT_RIGHT, T_WALL_SIDE_MID_LEFT, T_WALL_SIDE_FRONT_LEFT, T_WALL_TOP_LEFT, T_WALL_TOP_MID, T_WALL_TOP_RIGHT, T_WALL_CORNER_TOP_LEFT,
-		T_WALL_CORNER_TOP_RIGHT, T_WALL_IN_CORNER_T_TOP_LEFT, T_WALL_IN_CORNER_T_TOP_RIGHT, T_WALL_CORNER_BOTTOM_LEFT, T_WALL_IN_CORNER_L_TOP_LEFT,
-		T_WALL_CORNER_BOTTOM_RIGHT, T_WALL_IN_CORNER_L_TOP_RIGHT, T_BLANK_1, T_BLANK_2, T_DOOR_UP, T_DOOR_DOWN
 	};
-	//Tile: Tile list ranges
-	const unsigned char DOOR_START_NUM = TILE_NUM - 3; //Where the doors start on the tile list
-	const Dim2Di WALL_RANGE = { 1, 20 }; //Where the wall tiles are in the list
-	const Dim2Di FLOOR_RANGE = { 32, 39 }; //Where the floor tiles are in the list
-	const Dim2Di WALL_SIDE_RANGE = { 45, 50 }; //Where the wall sides are in the list
-	const Dim2Di WALL_TOP_RANGE = { 51, 57 }; //Where the wall tops are in the list
-	const Dim2Di WALL_CORNER_RANGE = { 58, 61 }; //Where the wall corners are in the list
-
-	//Room: General
-	const char ROOM_NUM = 3; //Number of rooms
-	const char ROOM_MAX_SIZE = 32; //Max size of a room, in tiles
-	const char ROOM_MAX_DOORS = 4; //Max doors in a room
-	//Room: Types
-	const Dim2Di ROOM_TYPE_0 = { 32, 32 };
-	const Dim2Di ROOM_TYPE_1 = { 16, 16 };
-	const Dim2Di ROOM_TYPE_2 = { 32, 16 };
-	const Dim2Di ROOM_TYPE_3 = { 16, 32 };
-	//Room: Tilemaps
-	const std::vector<RoomData> ROOM_LIST = {
-		{1, {{54, 23, 52, 22, 64, 64, 64, 64, 22, 52, 52, 52, 23, 52, 52, 55},
-			{14, 19, 02, 16, 64, 64, 64, 64, 16, 02, 04, 02, 18, 02, 02, 15},
-			{49, 27, 32, 24, 32, 38, 39, 32, 24, 32, 32, 32, 26, 32, 32, 47},
-			{49, 32, 32, 32, 32, 32, 32, 32, 36, 32, 32, 32, 33, 32, 32, 47},
-			{49, 32, 35, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 47},
-			{49, 32, 32, 32, 32, 33, 32, 32, 38, 32, 32, 32, 32, 39, 32, 47},
-			{49, 32, 32, 36, 32, 32, 32, 32, 32, 32, 37, 35, 32, 32, 32, 47},
-			{49, 32, 32, 32, 32, 32, 37, 32, 32, 32, 32, 32, 32, 32, 32, 47},
-			{49, 34, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 34, 32, 32, 47},
-			{49, 32, 32, 38, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 47},
-			{49, 32, 32, 32, 37, 35, 32, 32, 32, 39, 32, 32, 32, 32, 32, 47},
-			{49, 32, 32, 32, 38, 39, 32, 32, 32, 32, 32, 32, 35, 32, 32, 47},
-			{49, 32, 37, 32, 32, 32, 32, 33, 32, 36, 32, 32, 32, 32, 32, 47},
-			{59, 52, 52, 52, 52, 52, 52, 30, 65, 65, 65, 65, 30, 52, 52, 61},
-			{01, 02, 04, 02, 02, 05, 02, 16, 65, 65, 65, 65, 16, 02, 02, 03},
-			{00, 00, 00, 00, 00, 00, 00, 25, 49, 36, 32, 47, 25, 00, 00, 00}}},
-		{1, {{54, 23, 52, 23, 52, 23, 52, 22, 64, 64, 64, 64, 22, 52, 23, 55},
-			{14, 18, 02, 18, 02, 18, 02, 16, 64, 64, 64, 64, 16, 02, 18, 15},
-			{49, 26, 32, 26, 32, 26, 32, 24, 32, 32, 32, 32, 24, 32, 26, 47},
-			{49, 32, 40, 32, 32, 32, 33, 32, 32, 34, 32, 35, 32, 32, 32, 47},
-			{49, 32, 34, 37, 35, 32, 32, 40, 38, 32, 32, 32, 40, 38, 39, 47},
-			{49, 32, 32, 38, 39, 32, 32, 32, 32, 32, 33, 32, 34, 32, 32, 47},
-			{49, 32, 36, 40, 32, 34, 32, 39, 32, 40, 32, 32, 32, 32, 32, 47},
-			{49, 32, 35, 32, 32, 32, 32, 32, 32, 37, 35, 32, 32, 33, 32, 47},
-			{49, 32, 40, 32, 32, 38, 32, 36, 32, 38, 39, 32, 40, 32, 32, 47},
-			{49, 32, 32, 32, 32, 32, 32, 40, 32, 32, 32, 32, 36, 32, 32, 47},
-			{49, 36, 32, 38, 32, 32, 32, 32, 32, 32, 32, 34, 32, 32, 32, 47},
-			{49, 32, 40, 32, 32, 36, 32, 34, 32, 32, 38, 32, 32, 39, 32, 47},
-			{49, 32, 32, 33, 32, 32, 32, 32, 40, 32, 32, 32, 40, 32, 32, 47},
-			{49, 32, 32, 32, 40, 32, 37, 35, 32, 32, 34, 32, 32, 36, 32, 47},
-			{59, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 52, 61},
-			{01, 02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 02, 03}}},
-		{1, {{54, 52, 23, 52, 23, 52, 23, 52, 52, 23, 52, 23, 52, 23, 52, 55},
-			{14, 02, 19, 02, 19, 02, 19, 05, 02, 19, 02, 19, 02, 19, 02, 15},
-			{49, 36, 27, 32, 27, 32, 27, 32, 32, 27, 32, 27, 36, 27, 32, 47},
-			{49, 32, 32, 37, 32, 34, 32, 32, 33, 32, 32, 34, 38, 32, 32, 47},
-			{49, 32, 32, 33, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 47},
-			{49, 32, 32, 32, 32, 32, 34, 32, 35, 32, 32, 32, 32, 33, 32, 47},
-			{49, 32, 32, 32, 32, 32, 32, 32, 32, 36, 32, 32, 32, 32, 32, 47},
-			{49, 32, 32, 34, 32, 32, 32, 33, 32, 32, 34, 32, 32, 32, 32, 47},
-			{49, 38, 32, 32, 32, 32, 32, 39, 32, 32, 32, 32, 32, 32, 32, 47},
-			{49, 32, 36, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 36, 32, 47},
-			{49, 32, 32, 32, 34, 32, 32, 36, 32, 32, 33, 32, 32, 39, 32, 47},
-			{49, 32, 32, 33, 35, 32, 32, 32, 32, 32, 37, 32, 32, 32, 34, 47},
-			{49, 34, 32, 32, 32, 32, 34, 32, 33, 32, 32, 36, 32, 32, 32, 47},
-			{49, 32, 36, 32, 32, 32, 32, 32, 32, 32, 32, 34, 32, 32, 32, 47},
-			{59, 52, 52, 52, 65, 65, 65, 65, 52, 52, 52, 52, 52, 52, 52, 61},
-			{01, 02, 05, 02, 65, 65, 65, 65, 02, 02, 02, 04, 02, 02, 02, 03}}} };
-
-	//Map
+	
+	//Map: General
 	const unsigned char MAP_SIZE_TILES = 128; //Maximum size of the map, in tiles
 	const short MAP_SIZE_PIXELS = MAP_SIZE_TILES * TILE_SIZE; //Maximum size of map, in pixels
 
-	//Entity
-	const unsigned char FEET_COLLISION_HEIGHT = 2; //Feet collision box height
-	const unsigned char C_OFFSET = 1; //Offset for smooth collision
-
 	//Player: General
-	const sf::IntRect PLAYER_BODY_RECT = { 0, 6, 16, 16 }; //Where the character's body is on the un-scaled sprite
-	const Dim2Di PLAYER_BODY_CENTRE = { 8, 14 }; //Where the centre of the character's body is on the un-scaled sprite
-	const Dim2Di PLAYER_DIMENSIONS = { 16, 22 }; //Dimensions of the player texture
+	const Dim2Df START_POSITION = { 684.f, 684.f }; //Start position
 	//Player: Animation
 	const unsigned char PLAYER_ANIM_FRAMES = 9; //Number of frames
-	enum PLAYER_ANIMATION { IDLE = 0, MOVE = 4, DODGE = 8 }; //Animation frame
 	const AnimationData PLAYER_ANIM_IDLE = { IDLE, MOVE - 1, 0.12f }; //Idle animation data for the player
 	const AnimationData PLAYER_ANIM_MOVE = { MOVE, DODGE - 1, 0.12f }; //Idle animation data for the player
 	//Player: Knight
-	const sf::IntRect KNIGHT_ANIM_RECT = { 128, 106, 144, 22 }; //Where the animation is on the spritesheet
+	const Dim2Di KNIGHT_DIMENSIONS = { 16, 22 }; //Dimensions of the player texture
+	const sf::IntRect KNIGHT_ANIM_RECT = { 128, 106, 144, KNIGHT_DIMENSIONS.y }; //Where the animation is on the spritesheet
+	const sf::IntRect KNIGHT_BODY_RECT = { 0, 6, 16, 16 }; //Where the character's body is on the un-scaled sprite
+	const Dim2Di KNIGHT_BODY_CENTRE = { 8, 14 }; //Where the centre of the character's body is on the un-scaled sprite
 	
+	//Enemy: General
+	const float ATTACK_COOLDOWN = 1.f; //Cooldown timer between attacks
+	const char MAX_ENEMIES = 10; //Maximum number of enemies
+	//Enemy: Animation
+	const unsigned char ENEMY_ANIM_FRAMES = 8; //Number of frames
+	const AnimationData ENEMY_ANIM_IDLE = { IDLE, MOVE - 1, 0.12f }; //Idle animation data for enemies
+	const AnimationData ENEMY_ANIM_MOVE = { MOVE, DODGE - 1, 0.12f }; //Idle animation data for enemies
+	const AnimationData ENEMY_ANIM_BITE = { IDLE, MOVE - 1, 0.3f }; //Bite animation for demons
+	//Enemy: Imp
+	const unsigned char IMP_HEALTH = 2; //Imp health
+	const Dim2Di IMP_DIMENSIONS = { 16, 14 }; //Dimensions of the imp texture
+	const sf::IntRect IMP_ANIM_RECT = { 369, 50, 128, IMP_DIMENSIONS.y }; //Where the animation is on the spritesheet
+	const sf::IntRect IMP_BODY_RECT = { 4, 0, 10, IMP_DIMENSIONS.y }; //Where the character's body is on the un-scaled sprite
+	const Dim2Di IMP_BODY_CENTRE = { 8, 9 }; //Where the centre of the character's body is on the un-scaled sprite
+	//Enemy: Lesser Demon
+	const unsigned char L_DEMON_HEALTH = 3; //Lesser Demon health
+	const Dim2Di L_DEMON_DIMENSIONS = { 16, 23 }; //Dimensions of the lesser demon texture
+	const sf::IntRect L_DEMON_ANIM_RECT = { 369, 329, 128, L_DEMON_DIMENSIONS.y }; //Where the animation is on the spritesheet
+	const sf::IntRect L_DEMON_BODY_RECT = { 2, 0, 11, L_DEMON_DIMENSIONS.y }; //Where the character's body is on the un-scaled sprite
+	const Dim2Di L_DEMON_BODY_CENTRE = { 8, 14 }; //Where the centre of the character's body is on the un-scaled sprite
+	//Enemy: Aberrant
+	const unsigned char ABERRANT_HEALTH = 4; //Lesser Demon health
+	const Dim2Di ABERRANT_DIMENSIONS = { 16, 18 }; //Dimensions of the lesser demon texture
+	const sf::IntRect ABERRANT_ANIM_RECT = { 368, 302, 128, ABERRANT_DIMENSIONS.y }; //Where the animation is on the spritesheet
+	const sf::IntRect ABERRANT_BODY_RECT = { 3, 0, 10, ABERRANT_DIMENSIONS.y }; //Where the character's body is on the un-scaled sprite
+	const Dim2Di ABERRANT_BODY_CENTRE = { 8, 12 }; //Where the centre of the character's body is on the un-scaled sprite
+	//Enemy: Greater Demon
+	const unsigned char G_DEMON_HEALTH = 8; //Lesser Demon health
+	const Dim2Di G_DEMON_DIMENSIONS = { 32, 34 }; //Dimensions of the lesser demon texture
+	const sf::IntRect G_DEMON_ANIM_RECT = { 16, 366, 256, G_DEMON_DIMENSIONS.y }; //Where the animation is on the spritesheet
+	const sf::IntRect G_DEMON_BODY_RECT = { 5, 2, 10, G_DEMON_DIMENSIONS.y }; //Where the character's body is on the un-scaled sprite
+	const Dim2Di G_DEMON_BODY_CENTRE = { 17, 20 }; //Where the centre of the character's body is on the un-scaled sprite
 
-	//Enemy
+	//Attack: General
+	const unsigned char MAX_MOTIONS = 2; //Maximum number of motions per attack
+	const char DEFAULT_DAMAGE = 1; //Default damage value
 
 	//Weapon: General
 	const unsigned char MAX_ATTACKS = 2; //Maximum number of attacks per weapon
 	const float WEAPON_HOVER = 0.5f; //Hover distance from centre, in tiles
 	const float WEAPON_HOVER_ROTATION = 30.f; //Hover rotation, in degrees
-	//Weapon: Sword
-	const sf::IntRect SWORD_RECT = { 323, 26, 10, 21 }; //Where the sword is on the spritesheet
-	const Dim2Df SWORD_ORIGIN = {5.f, 18.f}; //The point at which the weapon is held
-	const float SWORD_RANGE = SWORD_ORIGIN.y + (WEAPON_HOVER * TILE_SIZE); //Default sword range (without motion movement)
-	//!!! Necessary yet? !!!
-	const float SWORD_DAMAGE_MULTIPLIER = 1.f; //Maybe N/A for this version
 
-	//Attack
-	const unsigned char MAX_MOTIONS = 2; //Maximum number of motions per attack
-	const char DEFAULT_DAMAGE = 1; //Default damage value
+	//Projectiles: General
+	const short MAX_PROJECTILES = 512;
+	//Projectiles: Fiery Skull
+	const unsigned char FIRE_SKULL_FRAMES = 6; //Number of frames
+	const AnimationData FIRE_SKULL_ANIM = { 0, FIRE_SKULL_FRAMES - 1, 0.09f }; //Idle animation data for the player
+	const Dim2Di FIRE_SKULL_DIMENSIONS = { 6, 6 }; //Dimensions of the player texture
+	const sf::IntRect FIRE_SKULL_ANIM_RECT = { 293, 341, 36, FIRE_SKULL_DIMENSIONS.y }; //Where the animation is on the spritesheet
+	const sf::IntRect FIRE_SKULL_BODY_RECT = { 0, 0, 6, 6 }; //Where the character's body is on the un-scaled sprite
+	const Dim2Di FIRE_SKULL_BODY_CENTRE = { 2, 2 }; //Where the centre of the character's body is on the un-scaled sprite
 
-	//Projectiles
-	const short MAX_PROJECTILES = 512; //Maximum number of projectiles
+	//Collision
+	const char CHECK_ATTACK_COLLISION_RANGE = TILE_SIZE * 4; //The distance between two origins in which collisions will be checked
 
-	//Enums
-	enum GAME_STATE { MAIN_MENU, PLAYING, WIN, LOSE }; //Current game state
-	enum DIRECTIONS { NORTH, EAST, SOUTH, WEST }; //NESW directions
-	enum TEXTURE_LIST {
-		SPRITESHEET_TEXTURE, MAP_FLOOR_TEXTURE, TILE_TEXTURE, DOOR_TEXTURE, DOOR_OPEN_TEXTURE, WALL_SIDE_TEXTURE, WALL_TOP_TEXTURE, WATER_FOUNTAIN_TEXTURE,
-		LAVA_FOUNTAIN_TEXTURE, PLAYER_TEXTURE
-	};
-	enum ATTACK_TYPES { ARC, POINT, AREA }; //Type of attack
-	enum ENTITY_STATES { STATIONARY, MOVING, ATTACKING_STATIONARY, ATTACKING_MOVING, DODGING }; //Current enemy state
-	enum ENTITY_WEIGHTS { LIGHT, MEDIUM, HEAVY }; //Weight of entity, reduces knockback
-	enum WEAPON_STATES { HOLDING, CHARGING_ARC }; //Current weapon state
-	enum PLAYER_INPUT { KEYBOARD, GAMEPAD }; //Player input states
-	enum ROOM_TYPES { R32X32, R16X16, R32X16, R16X32 }; //Room types
-	enum ATTACK_INPUTS { FIRST_ATTACK, SECOND_ATTACK }; //Attack inputs
-	enum COLLISION_TYPES {
-		C_FREE_MOVEMENT, C_WALL, C_WALL_TOP, C_WALL_SIDE_LEFT, C_WALL_SIDE_RIGHT, C_WALL_TOP_BOTTOM_LEFT, C_WALL_TOP_BOTTOM_RIGHT, C_FOUNTAIN_TOP, C_FOUNTAIN_BASIN,
-		C_COLUMN_TOP, C_COLUMN_BASE, C_CORNER_BOTTOM_LEFT, C_CORNER_BOTTOM_RIGHT
-	}; //Collision map types
+	//Knockback
+	const float KNOCKBACK_TIMER = 0.25f; //How long an enemy is knocked back for
+	const float KNOCKBACK_INVULNERABILITY = 0.15f; //How long an entity is invulnerable for in knockback
 }

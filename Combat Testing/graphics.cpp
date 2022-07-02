@@ -28,6 +28,14 @@ void Animation::UpdateAnimation(sf::Sprite& sprite, const float& elapsed)
 	}
 }
 
+//Initiates a new animation
+void Animation::Init(const AnimationData* animData)
+{
+	data = animData;
+	currentFrame = animData->startFrame;
+	frameTimer = 0.f;
+}
+
 /* Requirements:
 - tileTexture with exact size of the tile being drawn to it (Different sizes for tiles and doors)
 - position is in pixels

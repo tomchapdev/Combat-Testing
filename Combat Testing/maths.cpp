@@ -1,7 +1,5 @@
 #include "maths.h"
 
-//Functions
-
 //Calculates vector using coords
 //Returns: Dim2Df vector (between 2 points, global bounds)
 Dim2Df CalculateVectorBetweenPoints(const Dim2Df& origin, const Dim2Df& target)

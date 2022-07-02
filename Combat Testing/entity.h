@@ -2,22 +2,17 @@
 #include "weapon.h"
 #include "graphics.h"
 
-//Structs
-
 //Knockback
 struct Knockback
 {
 	//Bools
 	bool immovable = false; //If entity is immune to knockback
-	bool active = false; //In knockback animation
 
-	//Main stats
-	float force = 0.f; //Current force of the knockback
-	float deceleration = 0.f; //Resistance to knockback
-	DirectionalAngle facing{};
-
-	//Structs
+	//Positioning
 	Dim2Df movementVector{ 0.f, 0.f }; //Movement vector of knockback
+
+	//Timer
+	float timer = 0.f; //How long the knockback lasts
 };
 
 //An interactive creature
@@ -31,6 +26,7 @@ struct Entity
 	bool isPlayer = false; //Player or Enemy
 	bool isAlive = true; //Alive or dead
 	bool canAttack = true; //Ability to attack
+	bool knockback = false; //Is being knocked back
 	bool invulnerable = false; //Can be damaged or not
 	bool moving = false; //Moving or still
 	bool facingRight = true; //Facing right or left
@@ -38,7 +34,6 @@ struct Entity
 
 	//Main stats
 	short int health = 0; //Hit points
-	float speed = 0.f; //Movement speed
 	float attackSpeed = 1.f; //Attack speed multiplier
 	float power = 1.f; //Damage multiplier
 
@@ -48,28 +43,29 @@ struct Entity
 	Dim2Di frameMovementVector = { 0, 0 }; //Current movement this frame
 	sf::IntRect collisionRect = { 0, 0, 0, 0 }; //Collision rect of the sprite
 
+	//Timer
+	float invulnerabilityTimer = 0.f; //How long the entity is invulnerable for
+
 	//Structs
 	Knockback knock; //Knockback
 	DirectionalAngle facing; //Direction the entity is facing
 	Weapon weapon; //Weapon the entity is holding
 	Animation anim; //Animation of the entity
 
-	//Functions
-
 	//Initiates an attack
 	void InitAttack(const GameData& game, const char& attack);
 
 	//Initiates a knockback
-	void InitKnockback();
+	void InitKnockback(const DirectionalAngle& facing, const float& knockPower);
 
-	//Updates movement vector based on target coords
-	void UpdateMovementVector(const Dim2Df& target);
+	//Updates knockback
+	void UpdateKnockback(const GameData& game);
 
-	//Moves the entity
+	//Moves the entity, also updates knockback
 	void Move(const GameData& game);
 
 	//Checks if movement is valid, using rectangle intersections
-	void CheckMapCollision(const GameData& game);
+	void CheckMapCollision(const GameData& game, const bool& entityBodyAttack);
 
 	//Renders the entity
 	void Render(sf::RenderWindow& window, const GameData& game);
@@ -80,12 +76,21 @@ struct Entity
 	//Update the weapon's state
 	void UpdateWeapon(const GameData& game, std::vector<Projectile>& proj);
 
-	//Entity takes damage
-	void TakeDamage();
+	//Entity takes damage, returns true if dead
+	bool TakeDamage(const unsigned char& damage, const DirectionalAngle& facing, const float& knockPower);
 
+	//Stop entity attack if map collision
+	void StopAttackIfMapCollided(const bool& collided);
 };
 
+//Game constants
 namespace GC
 {
-	//const float KNIGHT_
+	//Entity: General
+	const unsigned char FEET_COLLISION_HEIGHT = 2; //Feet collision box height
+	const unsigned char C_OFFSET = 1; //Offset for smooth collision
+	const unsigned char ENEMY_ATTACK_C_OFFSET = 3; //Offset for better collision
+	const float SLOW_MOVEMENT_SPEED = 100.f;
+	const float MEDIUM_MOVEMENT_SPEED = 130.f;
+	const float FAST_MOVEMENT_SPEED = 160.f;
 }

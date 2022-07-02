@@ -16,6 +16,9 @@ struct Animation
 
 	//Updates animation
 	void UpdateAnimation(sf::Sprite& sprite, const float& elapsed);
+
+	//Initiates a new animation
+	void Init(const AnimationData* animData);
 };
 
 //Animation for tiles on the map

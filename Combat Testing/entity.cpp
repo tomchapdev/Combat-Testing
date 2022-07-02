@@ -1,8 +1,6 @@
 #include "entity.h"
 #include "maths.h"
 
-//Functions
-
 //Initiates an attack
 void Entity::InitAttack(const GameData& game, const char& attack)
 {
@@ -13,74 +11,133 @@ void Entity::InitAttack(const GameData& game, const char& attack)
 	{
 		if (weapon.entityIsWeapon)
 		{
-			weapon.attack0.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true);
+			weapon.attack0.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true, &anim);
 		}
 		else
 		{
-			weapon.attack0.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false);
+			weapon.attack0.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false, &anim);
 		}
 	}
 	else if (weapon.hasTwoAttacks && attack == GC::SECOND_ATTACK)
 	{
 		if (weapon.entityIsWeapon)
 		{
-			weapon.attack1.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true);
+			weapon.attack1.Init(game, sprite, nullptr, facing, attackSpeed, weapon.holdDistance, true, &anim);
 		}
 		else
 		{
-			weapon.attack1.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false);
+			weapon.attack1.Init(game, weapon.sprite, &sprite, facing, attackSpeed, weapon.holdDistance, false, &anim);
 		}
 	}
 }
 
 //Initiates a knockback
-void Entity::InitKnockback()
+void Entity::InitKnockback(const DirectionalAngle& facing, const float& knockPower)
 {
-
+	knockback = true;
+	knock.movementVector = CalculateVectorOfMagnitude(facing, knockPower);
+	knock.timer = GC::KNOCKBACK_TIMER;
+	invulnerable = true;
+	invulnerabilityTimer = GC::KNOCKBACK_INVULNERABILITY;
 }
 
-//Updates movement vector based on target coords
-void Entity::UpdateMovementVector(const Dim2Df& target)
+//Updates knockback
+void Entity::UpdateKnockback(const GameData& game)
 {
-	//Get vector between points, then calculate directional angle using vector
-	facing = CalculateDirectionalAngleFromVector(CalculateVectorBetweenPoints(sprite.getPosition(), target));
+	knock.timer -= game.elapsed;
+	invulnerabilityTimer -= game.elapsed;
 
-	movementVector = CalculateVectorOfMagnitude(facing, speed);
+	if (knock.timer < 0.f)
+	{
+		knockback = false;
+	}
+
+	if (invulnerabilityTimer < 0.f)
+	{
+		invulnerable = false;
+	}
 }
 
-//Move the entity and weapon
+//Move the entity, also updates knockback
 void Entity::Move(const GameData& game)
 {
-	frameMovementVector.x = (int)roundf(movementVector.x * game.elapsed);
-	frameMovementVector.y = (int)roundf(movementVector.y * game.elapsed);
+	if (knockback)
+	{
+		frameMovementVector.x = (int)roundf(knock.movementVector.x * game.elapsed);
+		frameMovementVector.y = (int)roundf(knock.movementVector.y * game.elapsed);
 
-	CheckMapCollision(game);
+		UpdateKnockback(game);
+	}
+	else
+	{
+		frameMovementVector.x = (int)roundf(movementVector.x * game.elapsed);
+		frameMovementVector.y = (int)roundf(movementVector.y * game.elapsed);
+	}
+	
+	CheckMapCollision(game, false);
 
 	sprite.move(Dim2Df(frameMovementVector));
 }
 
 //Checks if movement is valid, using rectangle intersections
-void Entity::CheckMapCollision(const GameData& game)
+void Entity::CheckMapCollision(const GameData& game, const bool& entityBodyAttack)
 {
-	//Get movement booleans
 	bool movingLeft = false, movingRight = false, movingUp = false, movingDown = false;
 
-	if (frameMovementVector.x < 0)
+	if (entityBodyAttack) //Attack movement
 	{
-		movingLeft = true;
-	}
-	else if (frameMovementVector.x > 0)
-	{
-		movingRight = true;
-	}
+		//Get angle
+		float angle;
 
-	if (frameMovementVector.y < 0)
-	{
-		movingUp = true;
+		if (weapon.attack0.active)
+		{
+			angle = weapon.attack0.initialAngle;
+		}
+		else //if (weapon.attack1.active)
+		{
+			angle = weapon.attack1.initialAngle;
+		}
+		ConstrainAngle(angle, false);
+
+		//Get movement booleans
+		if ((angle >= GC::DEGREES_225) && (angle <= GC::DEGREES_315))
+		{
+			movingLeft = true;
+		}
+		else if ((angle >= GC::DEGREES_45) && (angle <= GC::DEGREES_135))
+		{
+			movingRight = true;
+		}
+
+		if ((angle >= GC::DEGREES_315) || (angle <= GC::DEGREES_45))
+		{
+			movingUp = true;
+		}
+		else if ((angle >= GC::DEGREES_135) && (angle <= GC::DEGREES_225))
+		{
+			movingDown = true;
+		}
 	}
-	else if (frameMovementVector.y > 0)
+	else //Normal movement
 	{
-		movingDown = true;
+		//Get movement booleans
+		if (frameMovementVector.x < 0)
+		{
+			movingLeft = true;
+		}
+		else if (frameMovementVector.x > 0)
+		{
+			movingRight = true;
+		}
+
+		if (frameMovementVector.y < 0)
+		{
+			movingUp = true;
+		}
+		else if (frameMovementVector.y > 0)
+		{
+			movingDown = true;
+		}
 	}
 
 	//Initialize collision rectangles, left and right rects based on the direction the entity is moving
@@ -88,6 +145,16 @@ void Entity::CheckMapCollision(const GameData& game)
 	sf::IntRect collisionBox = sf::IntRect(sprite.getGlobalBounds()); //Entity's collision rectangle
 	collisionBox.top = collisionBox.top + collisionBox.height - GC::FEET_COLLISION_HEIGHT;
 	collisionBox.height = GC::FEET_COLLISION_HEIGHT;
+
+	//Enlarge collision box for attacks 
+	if (entityBodyAttack)
+	{
+		collisionBox.left -= GC::ENEMY_ATTACK_C_OFFSET;
+		collisionBox.width += GC::ENEMY_ATTACK_C_OFFSET * 2;
+		collisionBox.top -= GC::ENEMY_ATTACK_C_OFFSET;
+		collisionBox.height += GC::ENEMY_ATTACK_C_OFFSET * 2;
+	}
+	
 
 	sf::IntRect leftTileRect = { 0, 0, 0, 0 }; //Map collision rectangle, to the left of the direction of movement
 	sf::IntRect rightTileRect = { 0, 0, 0, 0 }; //Map collision rectangle, to the right of the direction of movement
@@ -124,7 +191,6 @@ void Entity::CheckMapCollision(const GameData& game)
 				leftTileRect = { leftPoint.x * GC::TILE_SIZE, leftPoint.y * GC::TILE_SIZE, GC::TILE_SIZE - GC::C_OFFSET, GC::COLUMN_BASE_HEIGHT + GC::C_OFFSET };
 			}
 
-
 			if (collisionBox.intersects(leftTileRect, intersection))
 			{
 				collided = true;
@@ -158,12 +224,11 @@ void Entity::CheckMapCollision(const GameData& game)
 
 				if (collisionBox.intersects(rightTileRect, intersection))
 				{
+					collided = true;
 					frameMovementVector.y = 0;
 				}
 			}
 		}
-
-		collided = false;
 	}
 	else if (movingDown)
 	{
@@ -200,7 +265,6 @@ void Entity::CheckMapCollision(const GameData& game)
 				frameMovementVector.y = 0;
 			}
 		}
-		
 
 		if (!collided)
 		{
@@ -233,15 +297,19 @@ void Entity::CheckMapCollision(const GameData& game)
 
 				if (collisionBox.intersects(rightTileRect, intersection))
 				{
+					collided = true;
 					frameMovementVector.y = 0;
 				}
-
-				collided = false;
 			}
 		}
-
-		collided = false;
 	}
+
+	//Check attack collision and reset
+	if (entityBodyAttack)
+	{
+		StopAttackIfMapCollided(collided);
+	}
+	collided = false;
 
 	//Reset collision rects
 	leftTileRect = { 0, 0, 0, 0 };
@@ -321,6 +389,7 @@ void Entity::CheckMapCollision(const GameData& game)
 
 				if (collisionBox.intersects(rightTileRect, intersection))
 				{
+					collided = true;
 					frameMovementVector.x = 0;
 				}
 			}
@@ -400,10 +469,17 @@ void Entity::CheckMapCollision(const GameData& game)
 
 				if (collisionBox.intersects(rightTileRect, intersection))
 				{
+					collided = true;
 					frameMovementVector.x = 0;
 				}
 			}
 		}
+	}
+
+	//Check attack collision
+	if (entityBodyAttack)
+	{
+		StopAttackIfMapCollided(collided);
 	}
 }
 
@@ -418,7 +494,6 @@ void Entity::Render(sf::RenderWindow& window, const GameData& game)
 		if (!facingRight)
 		{
 			sprite.setScale(1.f, 1.f);
-			//bodyCentre.x = globalRect.width - bodyCentre.x;
 			facingRight = true;
 		}
 	}
@@ -488,6 +563,12 @@ void Entity::UpdateWeapon(const GameData& game, std::vector<Projectile>& proj)
 			x -= frameMovementVector.x;
 			y -= frameMovementVector.y;
 		}
+		
+		//Check map collision for entity attacks
+		if (weapon.attacking && weapon.entityIsWeapon)
+		{
+			CheckMapCollision(game, true);
+		}
 	}
 	else
 	{
@@ -515,7 +596,29 @@ void Entity::UpdateWeapon(const GameData& game, std::vector<Projectile>& proj)
 	weapon.sprite.move({ x, y });
 }
 
-void Entity::TakeDamage()
+//Entity takes damage
+bool Entity::TakeDamage(const unsigned char& damage, const DirectionalAngle& facing, const float& knockPower)
 {
+	health -= damage;
 
+	if (health <= 0)
+	{
+		isAlive = false;
+	}
+	else if (!isPlayer && !knock.immovable)
+	{
+		InitKnockback(facing, knockPower);
+	}
+
+	return !isAlive;
+}
+
+//Stop entity attack if map collision
+void Entity::StopAttackIfMapCollided(const bool& collided)
+{
+	if (collided)
+	{
+		weapon.attack0.Stop();
+		weapon.attack1.Stop();
+	}
 }

@@ -1,7 +1,5 @@
 #include "ui.h"
 
-//Functions
-
 //Initialize UI
 void UI::Init(const sf::Image &spritesheet)
 {

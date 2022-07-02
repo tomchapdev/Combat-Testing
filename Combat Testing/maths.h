@@ -3,7 +3,7 @@
 #include <cmath>
 #include "data.h"
 
-//Global constants
+//Game constants
 namespace GC
 {
 	//Angles
@@ -14,14 +14,16 @@ namespace GC
 	const float RADS_5DEGREES = 0.082673f; //For calculating specific degrees in radians
 	const float RADS_45DEGREES = 0.785398f; //For specific directional movement
 	const float DEGREES_360 = 360.f; //360 degrees
+	const float DEGREES_315 = 315.f; //315 degrees
 	const float DEGREES_270 = 270.f; //270 degrees
+	const float DEGREES_225 = 225.f; //225 degrees
 	const float DEGREES_180 = 180.f; //180 degrees
+	const float DEGREES_135 = 135.f; //135 degrees
 	const float DEGREES_90 = 90.f; //90 degrees
+	const float DEGREES_45 = 45.f; //45 degrees
 	const float ZERO = 0.f; //Zero
 	const float SIN_COS_45_DEGREES = 0.707107f; //Sin or cos of 45 degrees
 }
-
-//Functions
 
 //Calculates vector using coords
 //Returns: Dim2Df vector (between 2 points, global bounds)

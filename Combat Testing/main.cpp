@@ -1,7 +1,4 @@
-//#include "audio.h"
-#include "player.h"
-#include "rooms.h"
-#include "ui.h"
+#include "game.h"
 
 //This is to force laptops to use the dedicated gpu instead of defaulting to the integrated gpu
 extern "C" __declspec(dllexport) unsigned long NvOptimusEnablement = 1;
@@ -45,71 +42,24 @@ int main()
 {
 	//Window
 	sf::RenderWindow window;
-
-	//Game data
-	GameData gamedata;
-	gamedata.Init(window);
-
-	//Clock
-	sf::Clock clock;
-	srand((int)time(0)); //Sets random's seed to current time, for "true random"
+	window.setFramerateLimit(GC::FRAMERATE);
 
 	//Cursor
 	sf::Cursor cursor;
 	GetCursorImage(cursor, window);
 
-	//Room
-	Room startRoom;
-	startRoom.Init(gamedata, 0, { 32, 32 });
-	Room enemyRoom;
-	enemyRoom.Init(gamedata, 1, { 32, 56 });
-	Room itemRoom;
-	itemRoom.Init(gamedata, 2, { 32, 8 });
-
-	//Player
-	Player player1;
-	player1.Init(gamedata);
-
-	//Projectiles
-	std::vector<Projectile> projectiles(GC::MAX_PROJECTILES);
-	InitProjectiles(gamedata, projectiles);
-
-	window.setFramerateLimit(GC::FRAMERATE);
+	//Game
+	Game game;
+	game.Init(window);
 
 	//Start the game loop 
 	while (window.isOpen()) //Could change this to a state manager?
 	{
 		// Clear screen
 		window.clear(sf::Color::Black);
-		//Clock
-		gamedata.elapsed = clock.getElapsedTime().asSeconds();
-		clock.restart();
+		
+		game.GameLoop(window);
 
-		if (gamedata.elapsed > GC::APPROX_ELAPSED) //Clamp elapsed time to 1/60th of a second
-		{
-			gamedata.elapsed = GC::APPROX_ELAPSED;
-		}
-
-		player1.InputHandling(window, gamedata);
-		if (player1.entity.moving)
-		{
-			player1.entity.Move(gamedata);
-		}
-		player1.entity.UpdateWeapon(gamedata, projectiles);
-
-		// Update the window
-		//Draw map, then enemies, then player
-		gamedata.RenderMap(window, player1.entity.sprite.getPosition());
-
-		//Render animated tiles
-		startRoom.UpdateAnimatedTiles(gamedata, window);
-		enemyRoom.UpdateAnimatedTiles(gamedata, window);
-		itemRoom.UpdateAnimatedTiles(gamedata, window);
-
-		UpdateProjectiles(gamedata, window, projectiles);
-
-		//Render player last
-		player1.entity.Render(window, gamedata);
 		window.display();
 	}
 
