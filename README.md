@@ -1,2 +1,2 @@
 # Combat-Testing
- For prototyping the combat systems and mechanics of Deadly Dungeon
+ Further prototyping the combat systems and mechanics of Deadly Dungeon
